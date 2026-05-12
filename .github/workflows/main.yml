@@ -1,4 +1,4 @@
-name: 🎮 Dead Town 3D – Full Third Person Zombie Shooter
+name: 🎮 Dead Town 3D – Patch Fix
 
 on:
   push:
@@ -28,9 +28,7 @@ jobs:
           mkdir -p DT3D/Sources
           mkdir -p DT3D/Resources/Assets.xcassets/AppIcon.appiconset
 
-      # ───────────────────────────────────────────────────────────────────────────
-      # AppDelegate
-      # ───────────────────────────────────────────────────────────────────────────
+      # ── AppDelegate ──────────────────────────────────────────────────────────
       - name: AppDelegate.swift
         run: |
           cat > DT3D/Sources/AppDelegate.swift << 'ENDOFFILE'
@@ -51,9 +49,7 @@ jobs:
           }
           ENDOFFILE
 
-      # ───────────────────────────────────────────────────────────────────────────
-      # Types
-      # ───────────────────────────────────────────────────────────────────────────
+      # ── Types ────────────────────────────────────────────────────────────────
       - name: Types.swift
         run: |
           cat > DT3D/Sources/Types.swift << 'ENDOFFILE'
@@ -102,9 +98,7 @@ jobs:
           }
           ENDOFFILE
 
-      # ───────────────────────────────────────────────────────────────────────────
-      # JoystickView
-      # ───────────────────────────────────────────────────────────────────────────
+      # ── JoystickView ─────────────────────────────────────────────────────────
       - name: JoystickView.swift
         run: |
           cat > DT3D/Sources/JoystickView.swift << 'ENDOFFILE'
@@ -124,15 +118,15 @@ jobs:
                   isUserInteractionEnabled = false
                   alpha = 0.80
 
-                  ring.frame = bounds
+                  ring.frame              = bounds
                   ring.layer.cornerRadius = radius
                   ring.backgroundColor    = UIColor(white:1,alpha:0.10)
                   ring.layer.borderColor  = UIColor(white:1,alpha:0.30).cgColor
                   ring.layer.borderWidth  = 2.0
                   addSubview(ring)
 
-                  let kR = radius * 0.40
-                  knob.frame = CGRect(x:radius-kR,y:radius-kR,width:kR*2,height:kR*2)
+                  let kR                  = radius * 0.40
+                  knob.frame              = CGRect(x:radius-kR,y:radius-kR,width:kR*2,height:kR*2)
                   knob.layer.cornerRadius = kR
                   knob.backgroundColor    = UIColor(white:1,alpha:0.36)
                   knob.layer.borderColor  = UIColor(white:1,alpha:0.55).cgColor
@@ -148,21 +142,21 @@ jobs:
                   let dist = sqrt(dx*dx+dy*dy)
                   let maxD = Float(radius)
                   let f    = dist <= maxD ? 1.0 : maxD/dist
-                  knob.center = CGPoint(x:cx+CGFloat(dx*f), y:cy+CGFloat(dy*f))
-                  velocity    = SIMD2<Float>(dx*f/maxD, dy*f/maxD)
+                  knob.center = CGPoint(x:cx+CGFloat(dx*f),y:cy+CGFloat(dy*f))
+                  velocity    = SIMD2<Float>(dx*f/maxD,dy*f/maxD)
                   isActive    = dist > maxD*0.12
               }
 
               func reset() {
                   knob.center   = CGPoint(x:radius,y:radius)
-                  velocity      = .zero; isActive = false; trackingTouch = nil
+                  velocity      = .zero
+                  isActive      = false
+                  trackingTouch = nil
               }
           }
           ENDOFFILE
 
-      # ───────────────────────────────────────────────────────────────────────────
-      # HUDOverlay
-      # ───────────────────────────────────────────────────────────────────────────
+      # ── HUDOverlay ───────────────────────────────────────────────────────────
       - name: HUDOverlay.swift
         run: |
           cat > DT3D/Sources/HUDOverlay.swift << 'ENDOFFILE'
@@ -181,150 +175,155 @@ jobs:
               private let barW: CGFloat = 210
 
               override init(frame: CGRect) {
-                  super.init(frame: frame)
+                  super.init(frame:frame)
                   isUserInteractionEnabled = false
                   buildUI()
               }
               required init?(coder: NSCoder) { fatalError() }
 
-              private func font(_ sz: CGFloat, bold: Bool = false) -> UIFont {
+              private func mkFont(_ sz: CGFloat, bold: Bool = false) -> UIFont {
                   let name = bold ? "Courier-Bold" : "Courier"
-                  let f = UIFont(name:name, size:sz)
-                  if bold { return f ?? UIFont.boldSystemFont(ofSize:sz) }
-                  return f ?? UIFont.systemFont(ofSize:sz)
+                  let found = UIFont(name:name,size:sz)
+                  return found ?? (bold ? UIFont.boldSystemFont(ofSize:sz) : UIFont.systemFont(ofSize:sz))
               }
 
               private func buildUI() {
-                  // ── Health bar ──────────────────────────────────────────────
-                  hpBg.frame = CGRect(x:28, y:16, width:barW+4, height:22)
+                  hpBg.frame              = CGRect(x:28,y:16,width:barW+4,height:22)
                   hpBg.backgroundColor    = UIColor(red:0.25,green:0,blue:0,alpha:0.80)
                   hpBg.layer.cornerRadius = 5
                   hpBg.layer.borderColor  = UIColor(white:1,alpha:0.15).cgColor
                   hpBg.layer.borderWidth  = 1
                   addSubview(hpBg)
 
-                  hpFill.frame = CGRect(x:30, y:18, width:barW, height:18)
+                  hpFill.frame              = CGRect(x:30,y:18,width:barW,height:18)
                   hpFill.backgroundColor    = UIColor(red:0.12,green:0.85,blue:0.12,alpha:1)
                   hpFill.layer.cornerRadius = 4
                   addSubview(hpFill)
 
                   let hpIcon = UILabel()
-                  hpIcon.text = "❤️"; hpIcon.font = font(14)
-                  hpIcon.frame = CGRect(x:8, y:16, width:22, height:22)
+                  hpIcon.text  = "❤️"
+                  hpIcon.font  = mkFont(14)
+                  hpIcon.frame = CGRect(x:8,y:16,width:22,height:22)
                   addSubview(hpIcon)
 
-                  // ── Score / Wave ────────────────────────────────────────────
-                  scoreLbl.frame            = CGRect(x:0, y:16, width:bounds.width, height:28)
+                  scoreLbl.frame            = CGRect(x:0,y:16,width:bounds.width,height:28)
                   scoreLbl.autoresizingMask = [.flexibleWidth]
-                  scoreLbl.text = "SCORE: 0"; scoreLbl.textAlignment = .center
-                  scoreLbl.textColor = UIColor(red:1,green:0.90,blue:0.20,alpha:1)
-                  scoreLbl.font = font(18, bold:true)
+                  scoreLbl.text             = "SCORE: 0"
+                  scoreLbl.textAlignment    = .center
+                  scoreLbl.textColor        = UIColor(red:1,green:0.90,blue:0.20,alpha:1)
+                  scoreLbl.font             = mkFont(18,bold:true)
                   addSubview(scoreLbl)
 
-                  waveLbl.frame            = CGRect(x:0, y:44, width:bounds.width, height:22)
+                  waveLbl.frame            = CGRect(x:0,y:44,width:bounds.width,height:22)
                   waveLbl.autoresizingMask = [.flexibleWidth]
-                  waveLbl.text = "WAVE 1"; waveLbl.textAlignment = .center
-                  waveLbl.textColor = UIColor(red:0.95,green:0.22,blue:0.22,alpha:1)
-                  waveLbl.font = font(14, bold:true)
+                  waveLbl.text             = "WAVE 1"
+                  waveLbl.textAlignment    = .center
+                  waveLbl.textColor        = UIColor(red:0.95,green:0.22,blue:0.22,alpha:1)
+                  waveLbl.font             = mkFont(14,bold:true)
                   addSubview(waveLbl)
 
-                  // ── Ammo ────────────────────────────────────────────────────
-                  ammoLbl.frame            = CGRect(x:bounds.width-170, y:bounds.height-80, width:150, height:40)
+                  ammoLbl.frame            = CGRect(x:bounds.width-170,y:bounds.height-80,width:150,height:40)
                   ammoLbl.autoresizingMask = [.flexibleLeftMargin,.flexibleTopMargin]
-                  ammoLbl.text = "30 | 90"; ammoLbl.textColor = .white
-                  ammoLbl.font = font(26, bold:true); ammoLbl.textAlignment = .right
+                  ammoLbl.text             = "30 | 90"
+                  ammoLbl.textColor        = .white
+                  ammoLbl.font             = mkFont(26,bold:true)
+                  ammoLbl.textAlignment    = .right
                   addSubview(ammoLbl)
 
-                  wepLbl.frame            = CGRect(x:bounds.width-170, y:bounds.height-108, width:150, height:22)
+                  wepLbl.frame            = CGRect(x:bounds.width-170,y:bounds.height-108,width:150,height:22)
                   wepLbl.autoresizingMask = [.flexibleLeftMargin,.flexibleTopMargin]
-                  wepLbl.text = "[PISTOL]"
-                  wepLbl.textColor = UIColor(red:1,green:0.80,blue:0.20,alpha:1)
-                  wepLbl.font = font(13, bold:true); wepLbl.textAlignment = .right
+                  wepLbl.text             = "[PISTOL]"
+                  wepLbl.textColor        = UIColor(red:1,green:0.80,blue:0.20,alpha:1)
+                  wepLbl.font             = mkFont(13,bold:true)
+                  wepLbl.textAlignment    = .right
                   addSubview(wepLbl)
 
-                  reloadLbl.frame            = CGRect(x:bounds.width-210, y:bounds.height-132, width:190, height:22)
+                  reloadLbl.frame            = CGRect(x:bounds.width-210,y:bounds.height-132,width:190,height:22)
                   reloadLbl.autoresizingMask = [.flexibleLeftMargin,.flexibleTopMargin]
-                  reloadLbl.text = "◉ RELOADING..."
-                  reloadLbl.textColor = UIColor(red:1,green:0.50,blue:0.00,alpha:1)
-                  reloadLbl.font = font(14, bold:true); reloadLbl.textAlignment = .right
-                  reloadLbl.isHidden = true
+                  reloadLbl.text             = "◉ RELOADING..."
+                  reloadLbl.textColor        = UIColor(red:1,green:0.50,blue:0.00,alpha:1)
+                  reloadLbl.font             = mkFont(14,bold:true)
+                  reloadLbl.textAlignment    = .right
+                  reloadLbl.isHidden         = true
                   addSubview(reloadLbl)
 
-                  // ── Message ─────────────────────────────────────────────────
-                  msgLbl.frame            = CGRect(x:0, y:bounds.height*0.35, width:bounds.width, height:50)
+                  msgLbl.frame            = CGRect(x:0,y:bounds.height*0.35,width:bounds.width,height:50)
                   msgLbl.autoresizingMask = [.flexibleWidth,.flexibleTopMargin,.flexibleBottomMargin]
-                  msgLbl.textColor = .white; msgLbl.font = font(30, bold:true)
-                  msgLbl.textAlignment = .center; msgLbl.alpha = 0
+                  msgLbl.textColor        = .white
+                  msgLbl.font             = mkFont(30,bold:true)
+                  msgLbl.textAlignment    = .center
+                  msgLbl.alpha            = 0
                   addSubview(msgLbl)
 
-                  // ── Crosshair ───────────────────────────────────────────────
                   addSubview(makeCrosshair())
 
-                  // ── Shoot button ────────────────────────────────────────────
                   let sS: CGFloat = 76
-                  shootBtn.frame = CGRect(x:bounds.width-sS-20-100,
-                                          y:bounds.height-sS-20, width:sS, height:sS)
+                  shootBtn.frame              = CGRect(x:bounds.width-sS-20-100,y:bounds.height-sS-20,width:sS,height:sS)
                   shootBtn.autoresizingMask   = [.flexibleLeftMargin,.flexibleTopMargin]
                   shootBtn.backgroundColor    = UIColor(red:0.65,green:0,blue:0,alpha:0.82)
                   shootBtn.layer.cornerRadius = sS/2
                   shootBtn.layer.borderColor  = UIColor(red:1,green:0.25,blue:0.25,alpha:1).cgColor
                   shootBtn.layer.borderWidth  = 2.5
-                  shootBtn.setTitle("🔫", for:.normal)
+                  shootBtn.setTitle("🔫",for:.normal)
                   shootBtn.titleLabel?.font   = UIFont.systemFont(ofSize:34)
                   shootBtn.isUserInteractionEnabled = true
                   addSubview(shootBtn)
               }
 
               private func makeCrosshair() -> UIView {
-                  let s:CGFloat=22, g:CGFloat=6, t:CGFloat=2
-                  let wx=bounds.width/2, hy=bounds.height/2
-                  let c=UIColor(red:1,green:0.18,blue:0.18,alpha:0.88)
-                  let v=UIView(frame:bounds)
-                  v.autoresizingMask=[.flexibleWidth,.flexibleHeight]
-                  v.isUserInteractionEnabled=false
-                  func bar(_ f:CGRect)->UIView{let b=UIView(frame:f);b.backgroundColor=c;return b}
-                  v.addSubview(bar(CGRect(x:wx-s-g/2,y:hy-t/2,width:s,height:t)))
-                  v.addSubview(bar(CGRect(x:wx+g/2,y:hy-t/2,width:s,height:t)))
-                  v.addSubview(bar(CGRect(x:wx-t/2,y:hy-s-g/2,width:t,height:s)))
-                  v.addSubview(bar(CGRect(x:wx-t/2,y:hy+g/2,width:t,height:s)))
-                  // Center dot
-                  let dot=UIView(frame:CGRect(x:wx-3,y:hy-3,width:6,height:6))
-                  dot.backgroundColor=c; dot.layer.cornerRadius=3; v.addSubview(dot)
+                  let s: CGFloat=22, g: CGFloat=6, t: CGFloat=2
+                  let wx = bounds.width/2, hy = bounds.height/2
+                  let c  = UIColor(red:1,green:0.18,blue:0.18,alpha:0.88)
+                  let v  = UIView(frame:bounds)
+                  v.autoresizingMask       = [.flexibleWidth,.flexibleHeight]
+                  v.isUserInteractionEnabled = false
+                  func bar(_ f: CGRect) -> UIView {
+                      let b = UIView(frame:f); b.backgroundColor = c; return b
+                  }
+                  v.addSubview(bar(CGRect(x:wx-s-g/2, y:hy-t/2, width:s,   height:t)))
+                  v.addSubview(bar(CGRect(x:wx+g/2,   y:hy-t/2, width:s,   height:t)))
+                  v.addSubview(bar(CGRect(x:wx-t/2,   y:hy-s-g/2, width:t, height:s)))
+                  v.addSubview(bar(CGRect(x:wx-t/2,   y:hy+g/2,   width:t, height:s)))
+                  let dot = UIView(frame:CGRect(x:wx-3,y:hy-3,width:6,height:6))
+                  dot.backgroundColor    = c
+                  dot.layer.cornerRadius = 3
+                  v.addSubview(dot)
                   return v
               }
 
               func update(hp: Float, maxHp: Float, ammo: Int, totalAmmo: Int,
                           score: Int, wave: Int, isReloading: Bool, weapon: String) {
-                  let ratio = CGFloat(max(0, hp/maxHp))
-                  UIView.animate(withDuration:0.12) { self.hpFill.frame.size.width = self.barW * ratio }
+                  let ratio = CGFloat(max(0,hp/maxHp))
+                  UIView.animate(withDuration:0.12) { self.hpFill.frame.size.width = self.barW*ratio }
                   hpFill.backgroundColor = ratio > 0.50
                       ? UIColor(red:0.12,green:0.85,blue:0.12,alpha:1)
                       : ratio > 0.25
                       ? UIColor(red:0.95,green:0.62,blue:0.00,alpha:1)
                       : UIColor(red:0.95,green:0.10,blue:0.10,alpha:1)
-                  ammoLbl.text      = "\(ammo) | \(totalAmmo)"
-                  ammoLbl.textColor = ammo == 0 ? .red : ammo <= 5 ? .orange : .white
-                  scoreLbl.text     = "SCORE: \(score)"
-                  waveLbl.text      = "WAVE \(wave)"
-                  wepLbl.text       = "[\(weapon)]"
+                  ammoLbl.text       = "\(ammo) | \(totalAmmo)"
+                  ammoLbl.textColor  = ammo==0 ? .red : ammo<=5 ? .orange : .white
+                  scoreLbl.text      = "SCORE: \(score)"
+                  waveLbl.text       = "WAVE \(wave)"
+                  wepLbl.text        = "[\(weapon)]"
                   reloadLbl.isHidden = !isReloading
               }
 
               func showMessage(_ text: String, color: UIColor = .white, dur: TimeInterval = 2.2) {
-                  msgLbl.text = text; msgLbl.textColor = color
-                  msgLbl.alpha = 0; msgLbl.transform = CGAffineTransform(scaleX:0.45,y:0.45)
+                  msgLbl.text      = text
+                  msgLbl.textColor = color
+                  msgLbl.alpha     = 0
+                  msgLbl.transform = CGAffineTransform(scaleX:0.45,y:0.45)
                   UIView.animate(withDuration:0.24) {
-                      self.msgLbl.alpha=1; self.msgLbl.transform = .identity
+                      self.msgLbl.alpha     = 1
+                      self.msgLbl.transform = CGAffineTransform.identity   // FIX: explicit type
                   } completion: { _ in
-                      UIView.animate(withDuration:0.40, delay:dur-0.40) { self.msgLbl.alpha=0 }
+                      UIView.animate(withDuration:0.40,delay:dur-0.40) { self.msgLbl.alpha = 0 }
                   }
               }
           }
           ENDOFFILE
 
-      # ───────────────────────────────────────────────────────────────────────────
-      # HumanNode  – Player character with full body + walk animation
-      # ───────────────────────────────────────────────────────────────────────────
+      # ── HumanNode (FIX: withKey → forKey) ───────────────────────────────────
       - name: HumanNode.swift
         run: |
           cat > DT3D/Sources/HumanNode.swift << 'ENDOFFILE'
@@ -343,7 +342,6 @@ jobs:
               override init() { super.init(); buildBody(); buildPhysics() }
               required init?(coder: NSCoder) { fatalError() }
 
-              // MARK: - Materials
               private func mat(_ color: UIColor, emission: UIColor? = nil) -> SCNMaterial {
                   let m = SCNMaterial()
                   m.diffuse.contents   = color
@@ -353,201 +351,130 @@ jobs:
                   return m
               }
 
-              // MARK: - Build Body
               private func buildBody() {
                   let skin    = mat(UIColor(red:0.86,green:0.71,blue:0.55,alpha:1))
-                  let shirt   = mat(UIColor(red:0.18,green:0.38,blue:0.18,alpha:1)) // military green
-                  let pants   = mat(UIColor(red:0.22,green:0.19,blue:0.14,alpha:1)) // dark khaki
-                  let shoes   = mat(UIColor(red:0.14,green:0.10,blue:0.06,alpha:1)) // dark brown
-                  let hair    = mat(UIColor(red:0.18,green:0.12,blue:0.06,alpha:1)) // dark brown hair
+                  let shirt   = mat(UIColor(red:0.18,green:0.38,blue:0.18,alpha:1))
+                  let pants   = mat(UIColor(red:0.22,green:0.19,blue:0.14,alpha:1))
+                  let shoes   = mat(UIColor(red:0.14,green:0.10,blue:0.06,alpha:1))
+                  let hair    = mat(UIColor(red:0.18,green:0.12,blue:0.06,alpha:1))
                   let eyeBlue = mat(UIColor(red:0.18,green:0.32,blue:0.72,alpha:1))
                   let gunMat  = mat(UIColor(red:0.16,green:0.16,blue:0.18,alpha:1))
                   let beltMat = mat(UIColor(red:0.12,green:0.10,blue:0.08,alpha:1))
 
-                  // ── HEAD ────────────────────────────────────────────────────
-                  headNode = SCNNode()
-                  headNode.position = SCNVector3(0, 1.74, 0)
-
-                  let faceGeo = SCNSphere(radius:0.155)
-                  faceGeo.materials = [skin]
+                  // HEAD
+                  headNode          = SCNNode()
+                  headNode.position = SCNVector3(0,1.74,0)
+                  let faceGeo = SCNSphere(radius:0.155); faceGeo.materials = [skin]
                   headNode.addChildNode(SCNNode(geometry:faceGeo))
-
-                  let hairGeo = SCNSphere(radius:0.165)
-                  hairGeo.materials = [hair]
-                  let hairNode = SCNNode(geometry:hairGeo)
-                  hairNode.position = SCNVector3(0,0.06,-0.02)
+                  let hairGeo = SCNSphere(radius:0.165); hairGeo.materials = [hair]
+                  let hairNode = SCNNode(geometry:hairGeo); hairNode.position = SCNVector3(0,0.06,-0.02)
                   headNode.addChildNode(hairNode)
-
-                  // Eyes
                   for xs: Float in [-1,1] {
-                      let eg = SCNSphere(radius:0.026)
-                      eg.materials = [eyeBlue]
-                      let en = SCNNode(geometry:eg)
-                      en.position = SCNVector3(xs*0.060,0.018,-0.142)
+                      let eg = SCNSphere(radius:0.026); eg.materials = [eyeBlue]
+                      let en = SCNNode(geometry:eg); en.position = SCNVector3(xs*0.060,0.018,-0.142)
                       headNode.addChildNode(en)
-                      // Pupil
                       let pg = SCNSphere(radius:0.013)
                       pg.materials = [mat(UIColor(red:0.05,green:0.05,blue:0.05,alpha:1))]
-                      let pn = SCNNode(geometry:pg)
-                      pn.position = SCNVector3(xs*0.060,0.018,-0.155)
+                      let pn = SCNNode(geometry:pg); pn.position = SCNVector3(xs*0.060,0.018,-0.155)
                       headNode.addChildNode(pn)
                   }
                   addChildNode(headNode)
 
-                  // ── NECK ────────────────────────────────────────────────────
-                  let neckGeo = SCNCylinder(radius:0.060, height:0.10)
-                  neckGeo.materials = [skin]
-                  let neckNode = SCNNode(geometry:neckGeo)
-                  neckNode.position = SCNVector3(0,1.635,0)
+                  // NECK
+                  let neckGeo = SCNCylinder(radius:0.060,height:0.10); neckGeo.materials = [skin]
+                  let neckNode = SCNNode(geometry:neckGeo); neckNode.position = SCNVector3(0,1.635,0)
                   addChildNode(neckNode)
 
-                  // ── TORSO ───────────────────────────────────────────────────
-                  let torsoGeo = SCNBox(width:0.44, height:0.52, length:0.20, chamferRadius:0.04)
+                  // TORSO
+                  let torsoGeo = SCNBox(width:0.44,height:0.52,length:0.20,chamferRadius:0.04)
                   torsoGeo.materials = [shirt]
-                  let torsoNode = SCNNode(geometry:torsoGeo)
-                  torsoNode.position = SCNVector3(0,1.30,0)
+                  let torsoNode = SCNNode(geometry:torsoGeo); torsoNode.position = SCNVector3(0,1.30,0)
                   addChildNode(torsoNode)
 
-                  // Chest pocket detail
-                  let pocketGeo = SCNBox(width:0.10, height:0.08, length:0.02, chamferRadius:0.01)
+                  // Chest pocket
+                  let pocketGeo = SCNBox(width:0.10,height:0.08,length:0.02,chamferRadius:0.01)
                   pocketGeo.materials = [mat(UIColor(red:0.14,green:0.30,blue:0.14,alpha:1))]
-                  let pocketNode = SCNNode(geometry:pocketGeo)
-                  pocketNode.position = SCNVector3(-0.14,1.36,-0.112)
+                  let pocketNode = SCNNode(geometry:pocketGeo); pocketNode.position = SCNVector3(-0.14,1.36,-0.112)
                   addChildNode(pocketNode)
 
                   // Belt
-                  let beltGeo = SCNBox(width:0.44, height:0.065, length:0.21, chamferRadius:0.02)
+                  let beltGeo = SCNBox(width:0.44,height:0.065,length:0.21,chamferRadius:0.02)
                   beltGeo.materials = [beltMat]
-                  let beltNode = SCNNode(geometry:beltGeo)
-                  beltNode.position = SCNVector3(0,1.055,0)
+                  let beltNode = SCNNode(geometry:beltGeo); beltNode.position = SCNVector3(0,1.055,0)
                   addChildNode(beltNode)
 
-                  // Belt buckle
                   let buckleGeo = SCNBox(width:0.07,height:0.05,length:0.025,chamferRadius:0.005)
                   buckleGeo.materials = [mat(UIColor(red:0.70,green:0.60,blue:0.20,alpha:1))]
-                  let buckleNode = SCNNode(geometry:buckleGeo)
-                  buckleNode.position = SCNVector3(0,1.055,-0.125)
+                  let buckleNode = SCNNode(geometry:buckleGeo); buckleNode.position = SCNVector3(0,1.055,-0.125)
                   addChildNode(buckleNode)
 
-                  // ── HIPS ────────────────────────────────────────────────────
-                  let hipsGeo = SCNBox(width:0.40, height:0.22, length:0.20, chamferRadius:0.03)
+                  // HIPS
+                  let hipsGeo = SCNBox(width:0.40,height:0.22,length:0.20,chamferRadius:0.03)
                   hipsGeo.materials = [pants]
-                  let hipsNode = SCNNode(geometry:hipsGeo)
-                  hipsNode.position = SCNVector3(0,0.90,0)
+                  let hipsNode = SCNNode(geometry:hipsGeo); hipsNode.position = SCNVector3(0,0.90,0)
                   addChildNode(hipsNode)
 
-                  // ── LEFT ARM JOINT (shoulder) ────────────────────────────
-                  leftArmJoint = SCNNode()
+                  // LEFT ARM
+                  leftArmJoint          = SCNNode()
                   leftArmJoint.position = SCNVector3(-0.275,1.49,0)
                   addChildNode(leftArmJoint)
+                  let luaGeo = SCNCylinder(radius:0.072,height:0.30); luaGeo.materials = [shirt]
+                  let lua = SCNNode(geometry:luaGeo); lua.position = SCNVector3(0,-0.15,0); leftArmJoint.addChildNode(lua)
+                  let lfaGeo = SCNCylinder(radius:0.060,height:0.26); lfaGeo.materials = [skin]
+                  let lfa = SCNNode(geometry:lfaGeo); lfa.position = SCNVector3(0,-0.44,0); leftArmJoint.addChildNode(lfa)
+                  let lhGeo = SCNSphere(radius:0.060); lhGeo.materials = [skin]
+                  let lh = SCNNode(geometry:lhGeo); lh.position = SCNVector3(0,-0.60,0); leftArmJoint.addChildNode(lh)
 
-                  let luaGeo = SCNCylinder(radius:0.072, height:0.30)
-                  luaGeo.materials = [shirt]
-                  let lua = SCNNode(geometry:luaGeo)
-                  lua.position = SCNVector3(0,-0.15,0)
-                  leftArmJoint.addChildNode(lua)
-
-                  let lfaGeo = SCNCylinder(radius:0.060, height:0.26)
-                  lfaGeo.materials = [skin]
-                  let lfa = SCNNode(geometry:lfaGeo)
-                  lfa.position = SCNVector3(0,-0.44,0)
-                  leftArmJoint.addChildNode(lfa)
-
-                  let lhGeo = SCNSphere(radius:0.060)
-                  lhGeo.materials = [skin]
-                  let lh = SCNNode(geometry:lhGeo)
-                  lh.position = SCNVector3(0,-0.60,0)
-                  leftArmJoint.addChildNode(lh)
-
-                  // ── RIGHT ARM JOINT (shoulder) ────────────────────────────
-                  rightArmJoint = SCNNode()
+                  // RIGHT ARM
+                  rightArmJoint          = SCNNode()
                   rightArmJoint.position = SCNVector3(0.275,1.49,0)
                   addChildNode(rightArmJoint)
-
-                  let ruaGeo = SCNCylinder(radius:0.072, height:0.30)
-                  ruaGeo.materials = [shirt]
-                  let rua = SCNNode(geometry:ruaGeo)
-                  rua.position = SCNVector3(0,-0.15,0)
-                  rightArmJoint.addChildNode(rua)
-
-                  let rfaGeo = SCNCylinder(radius:0.060, height:0.26)
-                  rfaGeo.materials = [skin]
-                  let rfa = SCNNode(geometry:rfaGeo)
-                  rfa.position = SCNVector3(0,-0.44,0)
-                  rightArmJoint.addChildNode(rfa)
-
-                  let rhGeo = SCNSphere(radius:0.060)
-                  rhGeo.materials = [skin]
-                  let rh = SCNNode(geometry:rhGeo)
-                  rh.position = SCNVector3(0,-0.60,0)
-                  rightArmJoint.addChildNode(rh)
+                  let ruaGeo = SCNCylinder(radius:0.072,height:0.30); ruaGeo.materials = [shirt]
+                  let rua = SCNNode(geometry:ruaGeo); rua.position = SCNVector3(0,-0.15,0); rightArmJoint.addChildNode(rua)
+                  let rfaGeo = SCNCylinder(radius:0.060,height:0.26); rfaGeo.materials = [skin]
+                  let rfa = SCNNode(geometry:rfaGeo); rfa.position = SCNVector3(0,-0.44,0); rightArmJoint.addChildNode(rfa)
+                  let rhGeo = SCNSphere(radius:0.060); rhGeo.materials = [skin]
+                  let rh = SCNNode(geometry:rhGeo); rh.position = SCNVector3(0,-0.60,0); rightArmJoint.addChildNode(rh)
 
                   // Gun in right hand
                   let gunBodyGeo = SCNBox(width:0.058,height:0.115,length:0.30,chamferRadius:0.012)
                   gunBodyGeo.materials = [gunMat]
-                  let gunBody = SCNNode(geometry:gunBodyGeo)
-                  gunBody.position = SCNVector3(0.04,-0.70,-0.08)
+                  let gunBody = SCNNode(geometry:gunBodyGeo); gunBody.position = SCNVector3(0.04,-0.70,-0.08)
                   rightArmJoint.addChildNode(gunBody)
-
-                  let barrelGeo = SCNCylinder(radius:0.018,height:0.16)
-                  barrelGeo.materials = [gunMat]
+                  let barrelGeo = SCNCylinder(radius:0.018,height:0.16); barrelGeo.materials = [gunMat]
                   let barrel = SCNNode(geometry:barrelGeo)
-                  barrel.eulerAngles = SCNVector3(Float.pi/2,0,0)
-                  barrel.position    = SCNVector3(0.04,-0.69,-0.225)
+                  barrel.eulerAngles = SCNVector3(Float.pi/2,0,0); barrel.position = SCNVector3(0.04,-0.69,-0.225)
                   rightArmJoint.addChildNode(barrel)
 
-                  // ── LEFT LEG JOINT (hip) ──────────────────────────────────
-                  leftLegJoint = SCNNode()
+                  // LEFT LEG
+                  leftLegJoint          = SCNNode()
                   leftLegJoint.position = SCNVector3(-0.130,0.80,0)
                   addChildNode(leftLegJoint)
-
-                  let lthGeo = SCNCylinder(radius:0.090, height:0.38)
-                  lthGeo.materials = [pants]
-                  let lth = SCNNode(geometry:lthGeo)
-                  lth.position = SCNVector3(0,-0.19,0)
-                  leftLegJoint.addChildNode(lth)
-
-                  let lshGeo = SCNCylinder(radius:0.075, height:0.34)
-                  lshGeo.materials = [pants]
-                  let lsh = SCNNode(geometry:lshGeo)
-                  lsh.position = SCNVector3(0,-0.56,0)
-                  leftLegJoint.addChildNode(lsh)
-
+                  let lthGeo = SCNCylinder(radius:0.090,height:0.38); lthGeo.materials = [pants]
+                  let lth = SCNNode(geometry:lthGeo); lth.position = SCNVector3(0,-0.19,0); leftLegJoint.addChildNode(lth)
+                  let lshGeo = SCNCylinder(radius:0.075,height:0.34); lshGeo.materials = [pants]
+                  let lsh = SCNNode(geometry:lshGeo); lsh.position = SCNVector3(0,-0.56,0); leftLegJoint.addChildNode(lsh)
                   let lfGeo = SCNBox(width:0.125,height:0.085,length:0.24,chamferRadius:0.028)
                   lfGeo.materials = [shoes]
-                  let lf = SCNNode(geometry:lfGeo)
-                  lf.position = SCNVector3(0.008,-0.76,-0.048)
-                  leftLegJoint.addChildNode(lf)
+                  let lf = SCNNode(geometry:lfGeo); lf.position = SCNVector3(0.008,-0.76,-0.048); leftLegJoint.addChildNode(lf)
 
-                  // ── RIGHT LEG JOINT (hip) ─────────────────────────────────
-                  rightLegJoint = SCNNode()
+                  // RIGHT LEG
+                  rightLegJoint          = SCNNode()
                   rightLegJoint.position = SCNVector3(0.130,0.80,0)
                   addChildNode(rightLegJoint)
-
-                  let rthGeo = SCNCylinder(radius:0.090, height:0.38)
-                  rthGeo.materials = [pants]
-                  let rth = SCNNode(geometry:rthGeo)
-                  rth.position = SCNVector3(0,-0.19,0)
-                  rightLegJoint.addChildNode(rth)
-
-                  let rshGeo = SCNCylinder(radius:0.075, height:0.34)
-                  rshGeo.materials = [pants]
-                  let rsh = SCNNode(geometry:rshGeo)
-                  rsh.position = SCNVector3(0,-0.56,0)
-                  rightLegJoint.addChildNode(rsh)
-
+                  let rthGeo = SCNCylinder(radius:0.090,height:0.38); rthGeo.materials = [pants]
+                  let rth = SCNNode(geometry:rthGeo); rth.position = SCNVector3(0,-0.19,0); rightLegJoint.addChildNode(rth)
+                  let rshGeo = SCNCylinder(radius:0.075,height:0.34); rshGeo.materials = [pants]
+                  let rsh = SCNNode(geometry:rshGeo); rsh.position = SCNVector3(0,-0.56,0); rightLegJoint.addChildNode(rsh)
                   let rfGeo = SCNBox(width:0.125,height:0.085,length:0.24,chamferRadius:0.028)
                   rfGeo.materials = [shoes]
-                  let rf = SCNNode(geometry:rfGeo)
-                  rf.position = SCNVector3(-0.008,-0.76,-0.048)
-                  rightLegJoint.addChildNode(rf)
+                  let rf = SCNNode(geometry:rfGeo); rf.position = SCNVector3(-0.008,-0.76,-0.048); rightLegJoint.addChildNode(rf)
               }
 
-              // MARK: - Physics
               private func buildPhysics() {
-                  let cap   = SCNCapsule(capRadius:0.28, height:1.40)
-                  let shape = SCNPhysicsShape(geometry:cap, options:nil)
-                  let body  = SCNPhysicsBody(type:.kinematic, shape:shape)
+                  let cap   = SCNCapsule(capRadius:0.28,height:1.40)
+                  let shape = SCNPhysicsShape(geometry:cap,options:nil)
+                  let body  = SCNPhysicsBody(type:.kinematic,shape:shape)
                   body.categoryBitMask    = PM.player
                   body.contactTestBitMask = PM.enemy | PM.item
                   body.collisionBitMask   = PM.wall  | PM.ground
@@ -555,37 +482,37 @@ jobs:
               }
 
               // MARK: - Walk Animation
+              // FIX: withKey → forKey (correct SCNNode API)
               func startWalk() {
                   guard !isWalking else { return }
                   isWalking = true
-                  let s: CGFloat = 0.55
-                  let d = 0.28
+                  let s: CGFloat = 0.55, d = 0.28
                   leftLegJoint.runAction(SCNAction.repeatForever(SCNAction.sequence([
-                      SCNAction.rotateTo(x:s,  y:0, z:0, duration:d, usesShortestUnitArc:true),
-                      SCNAction.rotateTo(x:-s, y:0, z:0, duration:d, usesShortestUnitArc:true)
-                  ])), withKey:"wL")
+                      SCNAction.rotateTo(x: s,  y:0, z:0, duration:d, usesShortestUnitArc:true),
+                      SCNAction.rotateTo(x:-s,  y:0, z:0, duration:d, usesShortestUnitArc:true)
+                  ])), forKey:"wL")
                   rightLegJoint.runAction(SCNAction.repeatForever(SCNAction.sequence([
-                      SCNAction.rotateTo(x:-s, y:0, z:0, duration:d, usesShortestUnitArc:true),
-                      SCNAction.rotateTo(x:s,  y:0, z:0, duration:d, usesShortestUnitArc:true)
-                  ])), withKey:"wR")
+                      SCNAction.rotateTo(x:-s,  y:0, z:0, duration:d, usesShortestUnitArc:true),
+                      SCNAction.rotateTo(x: s,  y:0, z:0, duration:d, usesShortestUnitArc:true)
+                  ])), forKey:"wR")
                   leftArmJoint.runAction(SCNAction.repeatForever(SCNAction.sequence([
                       SCNAction.rotateTo(x:-s*0.45, y:0, z:0, duration:d, usesShortestUnitArc:true),
-                      SCNAction.rotateTo(x:s*0.45,  y:0, z:0, duration:d, usesShortestUnitArc:true)
-                  ])), withKey:"wAL")
+                      SCNAction.rotateTo(x: s*0.45, y:0, z:0, duration:d, usesShortestUnitArc:true)
+                  ])), forKey:"wAL")
                   rightArmJoint.runAction(SCNAction.repeatForever(SCNAction.sequence([
-                      SCNAction.rotateTo(x:s*0.45,  y:0, z:0, duration:d, usesShortestUnitArc:true),
+                      SCNAction.rotateTo(x: s*0.45, y:0, z:0, duration:d, usesShortestUnitArc:true),
                       SCNAction.rotateTo(x:-s*0.45, y:0, z:0, duration:d, usesShortestUnitArc:true)
-                  ])), withKey:"wAR")
+                  ])), forKey:"wAR")
               }
 
               func stopWalk() {
                   guard isWalking else { return }
                   isWalking = false
-                  for k in ["wL","wR","wAL","wAR"] {
-                      leftLegJoint.removeAction(forKey:k)
-                      rightLegJoint.removeAction(forKey:k)
-                      leftArmJoint.removeAction(forKey:k)
-                      rightArmJoint.removeAction(forKey:k)
+                  for key in ["wL","wR","wAL","wAR"] {
+                      leftLegJoint.removeAction(forKey:key)
+                      rightLegJoint.removeAction(forKey:key)
+                      leftArmJoint.removeAction(forKey:key)
+                      rightArmJoint.removeAction(forKey:key)
                   }
                   leftLegJoint.eulerAngles  = SCNVector3Zero
                   rightLegJoint.eulerAngles = SCNVector3Zero
@@ -595,9 +522,7 @@ jobs:
           }
           ENDOFFILE
 
-      # ───────────────────────────────────────────────────────────────────────────
-      # ZombieNode  – Enemy with full human-like body
-      # ───────────────────────────────────────────────────────────────────────────
+      # ── ZombieNode ───────────────────────────────────────────────────────────
       - name: ZombieNode.swift
         run: |
           cat > DT3D/Sources/ZombieNode.swift << 'ENDOFFILE'
@@ -627,90 +552,80 @@ jobs:
 
               private func m(_ c: UIColor) -> SCNMaterial {
                   let mat = SCNMaterial()
-                  mat.diffuse.contents = c; mat.lightingModel = .lambert
-                  mat.roughness.contents = 0.90; return mat
+                  mat.diffuse.contents   = c
+                  mat.lightingModel      = .lambert
+                  mat.roughness.contents = 0.90
+                  return mat
               }
 
               private func buildBody() {
                   let scale: Float = kind == .boss ? 1.65 : (kind == .brute ? 1.25 : 1.0)
-                  let sk   = kind.skinColor
-                  let cl   = kind.clothColor
-                  let eyeC = UIColor(red:0.90,green:0.04,blue:0.04,alpha:1)
+                  let sk = kind.skinColor, cl = kind.clothColor
                   let eyeM = SCNMaterial()
-                  eyeM.diffuse.contents = eyeC; eyeM.emission.contents = UIColor(red:0.6,green:0,blue:0,alpha:1)
-                  eyeM.lightingModel    = .constant
+                  eyeM.diffuse.contents  = UIColor(red:0.90,green:0.04,blue:0.04,alpha:1)
+                  eyeM.emission.contents = UIColor(red:0.6,green:0,blue:0,alpha:1)
+                  eyeM.lightingModel     = .constant
 
-                  bodyNode = SCNNode()
+                  bodyNode       = SCNNode()
                   bodyNode.scale = SCNVector3(scale,scale,scale)
 
-                  // HEAD (slightly tilted forward = zombie look)
-                  let headGeo = SCNSphere(radius:0.148)
-                  headGeo.materials = [m(sk)]
-                  let head = SCNNode(geometry:headGeo)
+                  // Head
+                  let headGeo = SCNSphere(radius:0.148); headGeo.materials = [m(sk)]
+                  let head    = SCNNode(geometry:headGeo)
                   head.position    = SCNVector3(0,1.70,0)
-                  head.eulerAngles = SCNVector3(0.28,0,0.08) // hunched
+                  head.eulerAngles = SCNVector3(0.28,0,0.08)
                   bodyNode.addChildNode(head)
 
-                  // Eyes (glowing red)
+                  // Eyes
                   for xs: Float in [-1,1] {
                       let eg = SCNSphere(radius:0.024); eg.materials = [eyeM]
-                      let en = SCNNode(geometry:eg)
-                      en.position = SCNVector3(xs*0.055,1.72,-0.135); bodyNode.addChildNode(en)
+                      let en = SCNNode(geometry:eg); en.position = SCNVector3(xs*0.055,1.72,-0.135)
+                      bodyNode.addChildNode(en)
                   }
 
                   // Boss crown
                   if kind == .boss {
-                      let crownGeo = SCNTorus(ringRadius:0.22, pipeRadius:0.04)
+                      let crownGeo = SCNTorus(ringRadius:0.22,pipeRadius:0.04)
                       let crownMat = SCNMaterial()
                       crownMat.diffuse.contents  = UIColor(red:1,green:0.75,blue:0,alpha:1)
                       crownMat.emission.contents = UIColor(red:0.5,green:0.35,blue:0,alpha:1)
-                      crownMat.lightingModel     = .constant
-                      crownGeo.materials = [crownMat]
-                      let crownNode = SCNNode(geometry:crownGeo)
-                      crownNode.position = SCNVector3(0,1.88,0)
-                      crownNode.runAction(SCNAction.repeatForever(
-                          SCNAction.rotateBy(x:0,y:.pi*2,z:0,duration:2.2)))
+                      crownMat.lightingModel     = .constant; crownGeo.materials = [crownMat]
+                      let crownNode = SCNNode(geometry:crownGeo); crownNode.position = SCNVector3(0,1.88,0)
+                      crownNode.runAction(SCNAction.repeatForever(SCNAction.rotateBy(x:0,y:.pi*2,z:0,duration:2.2)))
                       bodyNode.addChildNode(crownNode)
                   }
 
                   // Neck
-                  let neckGeo = SCNCylinder(radius:0.055, height:0.095); neckGeo.materials = [m(sk)]
+                  let neckGeo = SCNCylinder(radius:0.055,height:0.095); neckGeo.materials = [m(sk)]
                   let neck = SCNNode(geometry:neckGeo); neck.position = SCNVector3(0,1.62,0)
                   bodyNode.addChildNode(neck)
 
-                  // Torso (hunched)
-                  let torsoGeo = SCNBox(width:0.42, height:0.50, length:0.20, chamferRadius:0.04)
+                  // Torso
+                  let torsoGeo = SCNBox(width:0.42,height:0.50,length:0.20,chamferRadius:0.04)
                   torsoGeo.materials = [m(cl)]
                   let torso = SCNNode(geometry:torsoGeo)
-                  torso.position    = SCNVector3(0,1.28,0)
-                  torso.eulerAngles = SCNVector3(0.18,0,0) // lean forward
+                  torso.position = SCNVector3(0,1.28,0); torso.eulerAngles = SCNVector3(0.18,0,0)
                   bodyNode.addChildNode(torso)
 
                   // Hips
-                  let hipsGeo = SCNBox(width:0.38, height:0.20, length:0.18, chamferRadius:0.03)
+                  let hipsGeo = SCNBox(width:0.38,height:0.20,length:0.18,chamferRadius:0.03)
                   hipsGeo.materials = [m(cl)]
                   let hips = SCNNode(geometry:hipsGeo); hips.position = SCNVector3(0,0.90,0)
                   bodyNode.addChildNode(hips)
 
-                  // Arms (outstretched = zombie pose)
+                  // Arms
                   for xs: Float in [-1,1] {
                       let joint = SCNNode()
                       joint.position    = SCNVector3(xs*0.265,1.48,0)
-                      joint.eulerAngles = SCNVector3(-0.55,0,xs*0.22) // outstretched
+                      joint.eulerAngles = SCNVector3(-0.55,0,xs*0.22)
                       if xs < 0 { leftArmJoint = joint } else { rightArmJoint = joint }
                       bodyNode.addChildNode(joint)
-
-                      let uaGeo = SCNCylinder(radius:0.068, height:0.28); uaGeo.materials = [m(cl)]
-                      let ua = SCNNode(geometry:uaGeo); ua.position = SCNVector3(0,-0.14,0)
-                      joint.addChildNode(ua)
-
-                      let laGeo = SCNCylinder(radius:0.056, height:0.25); laGeo.materials = [m(sk)]
-                      let la = SCNNode(geometry:laGeo); la.position = SCNVector3(0,-0.415,0)
-                      joint.addChildNode(la)
-
+                      let uaGeo = SCNCylinder(radius:0.068,height:0.28); uaGeo.materials = [m(cl)]
+                      let ua = SCNNode(geometry:uaGeo); ua.position = SCNVector3(0,-0.14,0); joint.addChildNode(ua)
+                      let laGeo = SCNCylinder(radius:0.056,height:0.25); laGeo.materials = [m(sk)]
+                      let la = SCNNode(geometry:laGeo); la.position = SCNVector3(0,-0.415,0); joint.addChildNode(la)
                       let handGeo = SCNSphere(radius:0.055); handGeo.materials = [m(sk)]
-                      let hand = SCNNode(geometry:handGeo); hand.position = SCNVector3(0,-0.57,0)
-                      joint.addChildNode(hand)
+                      let hand = SCNNode(geometry:handGeo); hand.position = SCNVector3(0,-0.57,0); joint.addChildNode(hand)
                   }
 
                   // Legs
@@ -718,107 +633,97 @@ jobs:
                       let joint = SCNNode(); joint.position = SCNVector3(xs*0.12,0.80,0)
                       if xs < 0 { leftLegJoint = joint } else { rightLegJoint = joint }
                       bodyNode.addChildNode(joint)
-
-                      let thGeo = SCNCylinder(radius:0.082, height:0.36); thGeo.materials = [m(cl)]
-                      let th = SCNNode(geometry:thGeo); th.position = SCNVector3(0,-0.18,0)
-                      joint.addChildNode(th)
-
-                      let shGeo = SCNCylinder(radius:0.068, height:0.32); shGeo.materials = [m(cl)]
-                      let sh = SCNNode(geometry:shGeo); sh.position = SCNVector3(0,-0.52,0)
-                      joint.addChildNode(sh)
-
+                      let thGeo = SCNCylinder(radius:0.082,height:0.36); thGeo.materials = [m(cl)]
+                      let th = SCNNode(geometry:thGeo); th.position = SCNVector3(0,-0.18,0); joint.addChildNode(th)
+                      let shGeo = SCNCylinder(radius:0.068,height:0.32); shGeo.materials = [m(cl)]
+                      let sh = SCNNode(geometry:shGeo); sh.position = SCNVector3(0,-0.52,0); joint.addChildNode(sh)
                       let fGeo = SCNBox(width:0.11,height:0.08,length:0.22,chamferRadius:0.025)
                       fGeo.materials = [m(UIColor(red:0.12,green:0.09,blue:0.05,alpha:1))]
-                      let f = SCNNode(geometry:fGeo); f.position = SCNVector3(xs*0.005,-0.72,-0.04)
-                      joint.addChildNode(f)
+                      let f = SCNNode(geometry:fGeo); f.position = SCNVector3(xs*0.005,-0.72,-0.04); joint.addChildNode(f)
                   }
 
                   addChildNode(bodyNode)
               }
 
               private func buildHPBar() {
-                  let bw: Float = kind.rad * 4.5
+                  let bw: Float = kind.rad*4.5
                   let bgGeo = SCNBox(width:CGFloat(bw+0.06),height:0.06,length:0.02,chamferRadius:0.01)
-                  let bgMat = SCNMaterial(); bgMat.diffuse.contents = UIColor(red:0.2,green:0,blue:0,alpha:0.88)
-                  bgMat.lightingModel = .constant; bgGeo.materials = [bgMat]
-                  hpBarNode = SCNNode(geometry:bgGeo)
+                  let bgMat = SCNMaterial()
+                  bgMat.diffuse.contents = UIColor(red:0.2,green:0,blue:0,alpha:0.88)
+                  bgMat.lightingModel    = .constant; bgGeo.materials = [bgMat]
+                  hpBarNode          = SCNNode(geometry:bgGeo)
                   hpBarNode.position = SCNVector3(0,kind.ht+0.30,0)
                   hpBarNode.constraints = [SCNBillboardConstraint()]
                   addChildNode(hpBarNode)
 
                   let fillGeo = SCNBox(width:CGFloat(bw),height:0.042,length:0.03,chamferRadius:0.008)
-                  let fillMat = SCNMaterial(); fillMat.diffuse.contents = UIColor(red:0.85,green:0.05,blue:0.05,alpha:1)
+                  let fillMat = SCNMaterial()
+                  fillMat.diffuse.contents  = UIColor(red:0.85,green:0.05,blue:0.05,alpha:1)
                   fillMat.emission.contents = UIColor(red:0.3,green:0,blue:0,alpha:1)
-                  fillMat.lightingModel = .constant; fillGeo.materials = [fillMat]
-                  hpFillNode = SCNNode(geometry:fillGeo)
+                  fillMat.lightingModel     = .constant; fillGeo.materials = [fillMat]
+                  hpFillNode          = SCNNode(geometry:fillGeo)
                   hpFillNode.position = SCNVector3(0,kind.ht+0.30,0.01)
                   hpFillNode.constraints = [SCNBillboardConstraint()]
                   addChildNode(hpFillNode)
               }
 
               private func refreshHPBar() {
-                  let ratio = max(0.001, hp/kind.hp)
-                  let bw    = kind.rad * 4.5
                   hpFillNode.removeFromParentNode()
+                  let ratio   = max(0.001, hp/kind.hp)
+                  let bw      = kind.rad*4.5
                   let fillGeo = SCNBox(width:CGFloat(bw*ratio),height:0.042,length:0.03,chamferRadius:0.008)
                   let fillMat = SCNMaterial()
-                  fillMat.diffuse.contents  = ratio > 0.5
+                  fillMat.diffuse.contents = ratio > 0.5
                       ? UIColor(red:0.85,green:0.05,blue:0.05,alpha:1)
                       : UIColor(red:1.00,green:0.45,blue:0.00,alpha:1)
                   fillMat.lightingModel = .constant; fillGeo.materials = [fillMat]
-                  hpFillNode = SCNNode(geometry:fillGeo)
-                  hpFillNode.position    = SCNVector3(-(bw*(1-ratio))/2, kind.ht+0.30, 0.01)
+                  hpFillNode            = SCNNode(geometry:fillGeo)
+                  hpFillNode.position   = SCNVector3(-(bw*(1-ratio))/2,kind.ht+0.30,0.01)
                   hpFillNode.constraints = [SCNBillboardConstraint()]
                   addChildNode(hpFillNode)
               }
 
               private func buildPhysics() {
-                  let cap   = SCNCapsule(capRadius:CGFloat(kind.rad), height:CGFloat(kind.ht))
-                  let shape = SCNPhysicsShape(geometry:cap, options:nil)
-                  let body  = SCNPhysicsBody(type:.kinematic, shape:shape)
+                  let cap   = SCNCapsule(capRadius:CGFloat(kind.rad),height:CGFloat(kind.ht))
+                  let shape = SCNPhysicsShape(geometry:cap,options:nil)
+                  let body  = SCNPhysicsBody(type:.kinematic,shape:shape)
                   body.categoryBitMask    = PM.enemy
                   body.contactTestBitMask = PM.bullet | PM.player
-                  body.collisionBitMask   = PM.wall | PM.ground
+                  body.collisionBitMask   = PM.wall   | PM.ground
                   physicsBody = body
               }
 
               private func startShuffleAnim() {
-                  // Zombie shuffle – slower, more erratic
-                  let s: CGFloat = 0.40; let d = 0.50
+                  let s: CGFloat = 0.40, d = 0.50
                   leftLegJoint?.runAction(SCNAction.repeatForever(SCNAction.sequence([
-                      SCNAction.rotateTo(x:s,  y:0, z:0.08, duration:d, usesShortestUnitArc:true),
-                      SCNAction.rotateTo(x:-s, y:0, z:0,    duration:d, usesShortestUnitArc:true)
+                      SCNAction.rotateTo(x: s,  y:0, z:0.08,  duration:d, usesShortestUnitArc:true),
+                      SCNAction.rotateTo(x:-s,  y:0, z:0,     duration:d, usesShortestUnitArc:true)
                   ])))
                   rightLegJoint?.runAction(SCNAction.repeatForever(SCNAction.sequence([
-                      SCNAction.rotateTo(x:-s, y:0, z:0,    duration:d, usesShortestUnitArc:true),
-                      SCNAction.rotateTo(x:s,  y:0, z:-0.08, duration:d, usesShortestUnitArc:true)
+                      SCNAction.rotateTo(x:-s,  y:0, z:0,     duration:d, usesShortestUnitArc:true),
+                      SCNAction.rotateTo(x: s,  y:0, z:-0.08, duration:d, usesShortestUnitArc:true)
                   ])))
-                  // Arms sway menacingly
                   leftArmJoint?.runAction(SCNAction.repeatForever(SCNAction.sequence([
-                      SCNAction.rotateTo(x:-0.70,y:0,z:0, duration:0.80, usesShortestUnitArc:true),
-                      SCNAction.rotateTo(x:-0.45,y:0,z:0, duration:0.60, usesShortestUnitArc:true)
+                      SCNAction.rotateTo(x:-0.70,y:0,z:0, duration:0.80,usesShortestUnitArc:true),
+                      SCNAction.rotateTo(x:-0.45,y:0,z:0, duration:0.60,usesShortestUnitArc:true)
                   ])))
                   rightArmJoint?.runAction(SCNAction.repeatForever(SCNAction.sequence([
-                      SCNAction.rotateTo(x:-0.45,y:0,z:0, duration:0.60, usesShortestUnitArc:true),
-                      SCNAction.rotateTo(x:-0.70,y:0,z:0, duration:0.80, usesShortestUnitArc:true)
+                      SCNAction.rotateTo(x:-0.45,y:0,z:0, duration:0.60,usesShortestUnitArc:true),
+                      SCNAction.rotateTo(x:-0.70,y:0,z:0, duration:0.80,usesShortestUnitArc:true)
                   ])))
-                  // Body sway
                   if kind == .boss {
                       bodyNode.runAction(SCNAction.repeatForever(SCNAction.sequence([
-                          SCNAction.scale(to:1.06, duration:0.55),
-                          SCNAction.scale(to:0.95, duration:0.55)
+                          SCNAction.scale(to:1.06,duration:0.55),
+                          SCNAction.scale(to:0.95,duration:0.55)
                       ])))
                   }
               }
 
-              // MARK: - Combat
               func takeDmg(_ amount: Float) {
                   guard isAlive else { return }
-                  hp -= amount; refreshHPBar()
-                  spawnBlood()
+                  hp -= amount; refreshHPBar(); spawnBlood()
                   let wMat = SCNMaterial(); wMat.diffuse.contents = UIColor.white; wMat.lightingModel = .constant
-                  let orig = kind.skinColor
-                  let oMat = SCNMaterial(); oMat.diffuse.contents = orig; oMat.lightingModel = .lambert
+                  let oMat = SCNMaterial(); oMat.diffuse.contents = kind.skinColor; oMat.lightingModel = .lambert
                   bodyNode.childNodes.first?.geometry?.materials = [wMat]
                   DispatchQueue.main.asyncAfter(deadline:.now()+0.08) { [weak self] in
                       self?.bodyNode.childNodes.first?.geometry?.materials = [oMat]
@@ -831,23 +736,18 @@ jobs:
                       let geo = SCNSphere(radius:CGFloat(Float.random(in:0.04...0.10)))
                       let mat = SCNMaterial()
                       mat.diffuse.contents = UIColor(red:0.62,green:0,blue:0,alpha:0.90)
-                      mat.lightingModel    = .constant
-                      geo.materials = [mat]
+                      mat.lightingModel    = .constant; geo.materials = [mat]
                       let node = SCNNode(geometry:geo)
                       node.position = SCNVector3(
-                          position.x + Float.random(in:-0.3...0.3),
-                          position.y + Float.random(in:0.5...1.2),
-                          position.z + Float.random(in:-0.3...0.3)
-                      )
+                          position.x+Float.random(in:-0.3...0.3),
+                          position.y+Float.random(in:0.5...1.2),
+                          position.z+Float.random(in:-0.3...0.3))
                       parent?.addChildNode(node)
-                      let dir = SCNVector3(Float.random(in:-1...1),
-                                          Float.random(in:0.5...2.0),
-                                          Float.random(in:-1...1))
+                      let dir = SCNVector3(Float.random(in:-1...1),Float.random(in:0.5...2.0),Float.random(in:-1...1))
                       node.runAction(SCNAction.sequence([
                           SCNAction.move(to:SCNVector3(node.position.x+dir.x,
                                                        max(0.02,node.position.y+dir.y*0.3),
-                                                       node.position.z+dir.z),
-                                         duration:0.30),
+                                                       node.position.z+dir.z), duration:0.30),
                           SCNAction.fadeOut(duration:0.60),
                           SCNAction.removeFromParentNode()
                       ]))
@@ -859,7 +759,7 @@ jobs:
                   runAction(SCNAction.sequence([
                       SCNAction.group([
                           SCNAction.rotateBy(x:CGFloat(Float.pi*0.6),y:0,z:CGFloat(Float.pi*0.4),duration:0.50),
-                          SCNAction.scale(to:0.02, duration:0.50),
+                          SCNAction.scale(to:0.02,duration:0.50),
                           SCNAction.fadeOut(duration:0.50)
                       ]),
                       SCNAction.removeFromParentNode()
@@ -868,11 +768,10 @@ jobs:
 
               func moveToward(target: SCNVector3, dt: Float) {
                   guard isAlive else { return }
-                  let dx = target.x-position.x, dz = target.z-position.z
-                  let d  = sqrt(dx*dx+dz*dz)
+                  let dx=target.x-position.x, dz=target.z-position.z
+                  let d=sqrt(dx*dx+dz*dz)
                   guard d > kind.atRange*0.85 else { return }
-                  position.x += dx/d*kind.spd*dt
-                  position.z += dz/d*kind.spd*dt
+                  position.x += dx/d*kind.spd*dt; position.z += dz/d*kind.spd*dt
                   eulerAngles.y = atan2(dx,dz)
               }
 
@@ -883,9 +782,7 @@ jobs:
           }
           ENDOFFILE
 
-      # ───────────────────────────────────────────────────────────────────────────
-      # WorldBuilder – Rich environment: grass, road, buildings, trees, lamps
-      # ───────────────────────────────────────────────────────────────────────────
+      # ── WorldBuilder ─────────────────────────────────────────────────────────
       - name: WorldBuilder.swift
         run: |
           cat > DT3D/Sources/WorldBuilder.swift << 'ENDOFFILE'
@@ -910,29 +807,25 @@ jobs:
                   addSkyAndFog(scene)
               }
 
-              // MARK: - Ground (green grass)
               private static func buildGround(_ scene: SCNScene, _ half: Float) {
                   let floor = SCNFloor()
                   let mat   = SCNMaterial()
                   mat.diffuse.contents   = UIColor(red:0.22,green:0.42,blue:0.16,alpha:1)
-                  mat.roughness.contents = 1.0
-                  mat.lightingModel      = .lambert
+                  mat.roughness.contents = 1.0; mat.lightingModel = .lambert
                   floor.materials = [mat]
                   let node = SCNNode(geometry:floor)
-                  node.physicsBody = SCNPhysicsBody(type:.static, shape:nil)
+                  node.physicsBody = SCNPhysicsBody(type:.static,shape:nil)
                   node.physicsBody?.categoryBitMask  = PM.ground
                   node.physicsBody?.collisionBitMask = PM.player|PM.enemy|PM.bullet
                   scene.rootNode.addChildNode(node)
-
-                  // Grass color variation patches
-                  let colors: [UIColor] = [
+                  let colors:[UIColor] = [
                       UIColor(red:0.20,green:0.40,blue:0.14,alpha:1),
                       UIColor(red:0.25,green:0.46,blue:0.18,alpha:1),
-                      UIColor(red:0.18,green:0.38,blue:0.12,alpha:1)
-                  ]
+                      UIColor(red:0.18,green:0.38,blue:0.12,alpha:1)]
                   for _ in 0..<80 {
                       let sz: Float = Float.random(in:2...8)
-                      let patch = SCNBox(width:CGFloat(sz),height:0.005,length:CGFloat(sz*Float.random(in:0.6...1.4)),chamferRadius:0)
+                      let patch = SCNBox(width:CGFloat(sz),height:0.005,
+                                         length:CGFloat(sz*Float.random(in:0.6...1.4)),chamferRadius:0)
                       patch.materials = [matte(colors.randomElement()!)]
                       let p = SCNNode(geometry:patch)
                       p.position = SCNVector3(Float.random(in:-half...half),0.001,Float.random(in:-half...half))
@@ -940,473 +833,334 @@ jobs:
                   }
               }
 
-              // MARK: - Roads
               private static func buildRoads(_ scene: SCNScene, _ half: Float) {
                   let rW: Float = 7.0
                   let roadMat = matte(UIColor(red:0.24,green:0.24,blue:0.26,alpha:1))
-
-                  // Main N-S road
-                  addBox(scene, w:rW, h:0.04, d:half*2,
-                         at:SCNVector3(0,0.02,0), mat:roadMat, physics:false)
-                  // Main E-W road
-                  addBox(scene, w:half*2, h:0.04, d:rW,
-                         at:SCNVector3(0,0.02,0), mat:roadMat, physics:false)
-
-                  // Road markings (dashed white center lines)
+                  addBox(scene,w:rW,h:0.04,d:half*2,at:SCNVector3(0,0.02,0),mat:roadMat,physics:false)
+                  addBox(scene,w:half*2,h:0.04,d:rW,at:SCNVector3(0,0.02,0),mat:roadMat,physics:false)
                   let dashMat = matte(UIColor(white:0.92,alpha:1))
-                  let dashLen: Float = 2.0, gap: Float = 2.5
+                  let dashLen: Float=2.0, gap: Float=2.5
                   var z: Float = -(half-2)
                   while z < half {
-                      addBox(scene, w:0.18, h:0.005, d:dashLen,
-                             at:SCNVector3(0,0.045,z), mat:dashMat, physics:false)
+                      addBox(scene,w:0.18,h:0.005,d:dashLen,at:SCNVector3(0,0.045,z),mat:dashMat,physics:false)
                       z += dashLen+gap
                   }
                   var x: Float = -(half-2)
                   while x < half {
-                      addBox(scene, w:dashLen, h:0.005, d:0.18,
-                             at:SCNVector3(x,0.045,0), mat:dashMat, physics:false)
+                      addBox(scene,w:dashLen,h:0.005,d:0.18,at:SCNVector3(x,0.045,0),mat:dashMat,physics:false)
                       x += dashLen+gap
                   }
-
-                  // Road edges (white lines)
                   let edgeMat = matte(UIColor(white:0.88,alpha:1))
                   for side: Float in [-1,1] {
-                      addBox(scene, w:0.22, h:0.005, d:half*2,
-                             at:SCNVector3(side*(rW/2-0.15),0.045,0), mat:edgeMat, physics:false)
-                      addBox(scene, w:half*2, h:0.005, d:0.22,
-                             at:SCNVector3(0,0.045,side*(rW/2-0.15)), mat:edgeMat, physics:false)
+                      addBox(scene,w:0.22,h:0.005,d:half*2,at:SCNVector3(side*(rW/2-0.15),0.045,0),mat:edgeMat,physics:false)
+                      addBox(scene,w:half*2,h:0.005,d:0.22,at:SCNVector3(0,0.045,side*(rW/2-0.15)),mat:edgeMat,physics:false)
                   }
               }
 
-              // MARK: - Sidewalks
               private static func buildSidewalks(_ scene: SCNScene, _ half: Float) {
                   let swMat = matte(UIColor(red:0.62,green:0.60,blue:0.58,alpha:1))
-                  let rH: Float = 7.0, swW: Float = 2.8
-                  // Along N-S road
+                  let rH: Float=7.0, swW: Float=2.8
                   for side: Float in [-1,1] {
-                      addBox(scene, w:swW, h:0.08, d:half*2,
-                             at:SCNVector3(side*(rH/2+swW/2),0.04,0), mat:swMat, physics:false)
-                  }
-                  // Along E-W road
-                  for side: Float in [-1,1] {
-                      addBox(scene, w:half*2, h:0.08, d:swW,
-                             at:SCNVector3(0,0.04,side*(rH/2+swW/2)), mat:swMat, physics:false)
+                      addBox(scene,w:swW,h:0.08,d:half*2,at:SCNVector3(side*(rH/2+swW/2),0.04,0),mat:swMat,physics:false)
+                      addBox(scene,w:half*2,h:0.08,d:swW,at:SCNVector3(0,0.04,side*(rH/2+swW/2)),mat:swMat,physics:false)
                   }
               }
 
-              // MARK: - Buildings
               private static func buildBuildings(_ scene: SCNScene) {
-                  let configs: [(Float,Float,Float,Float,UIColor)] = [
-                      (-18,-18, 9, 10, UIColor(red:0.54,green:0.46,blue:0.38,alpha:1)),
-                      ( 18,-18, 8, 12, UIColor(red:0.48,green:0.42,blue:0.36,alpha:1)),
-                      (-18, 18, 10, 9, UIColor(red:0.52,green:0.44,blue:0.35,alpha:1)),
-                      ( 18, 18, 8, 11, UIColor(red:0.50,green:0.43,blue:0.36,alpha:1)),
-                      (-28,  0, 7, 8,  UIColor(red:0.56,green:0.48,blue:0.40,alpha:1)),
-                      ( 28,  0, 7, 9,  UIColor(red:0.46,green:0.40,blue:0.34,alpha:1)),
-                      (  0,-28, 9, 8,  UIColor(red:0.50,green:0.44,blue:0.36,alpha:1)),
-                      (  0, 28, 8, 7,  UIColor(red:0.55,green:0.46,blue:0.38,alpha:1)),
-                      (-12,-22, 6, 7,  UIColor(red:0.42,green:0.36,blue:0.30,alpha:1)),
-                      ( 12,-22, 6, 8,  UIColor(red:0.44,green:0.38,blue:0.32,alpha:1)),
-                      (-12, 22, 7, 6,  UIColor(red:0.46,green:0.40,blue:0.34,alpha:1)),
-                      ( 12, 22, 6, 7,  UIColor(red:0.48,green:0.42,blue:0.36,alpha:1)),
-                      (-24,-10, 5, 6,  UIColor(red:0.40,green:0.34,blue:0.28,alpha:1)),
-                      ( 24,-10, 5, 7,  UIColor(red:0.42,green:0.36,blue:0.30,alpha:1)),
-                      (-24, 10, 5, 6,  UIColor(red:0.44,green:0.38,blue:0.32,alpha:1)),
-                      ( 24, 10, 6, 6,  UIColor(red:0.46,green:0.40,blue:0.34,alpha:1))
+                  let configs:[(Float,Float,Float,Float,UIColor)] = [
+                      (-18,-18,9,10,UIColor(red:0.54,green:0.46,blue:0.38,alpha:1)),
+                      (18,-18,8,12,UIColor(red:0.48,green:0.42,blue:0.36,alpha:1)),
+                      (-18,18,10,9,UIColor(red:0.52,green:0.44,blue:0.35,alpha:1)),
+                      (18,18,8,11,UIColor(red:0.50,green:0.43,blue:0.36,alpha:1)),
+                      (-28,0,7,8,UIColor(red:0.56,green:0.48,blue:0.40,alpha:1)),
+                      (28,0,7,9,UIColor(red:0.46,green:0.40,blue:0.34,alpha:1)),
+                      (0,-28,9,8,UIColor(red:0.50,green:0.44,blue:0.36,alpha:1)),
+                      (0,28,8,7,UIColor(red:0.55,green:0.46,blue:0.38,alpha:1)),
+                      (-12,-22,6,7,UIColor(red:0.42,green:0.36,blue:0.30,alpha:1)),
+                      (12,-22,6,8,UIColor(red:0.44,green:0.38,blue:0.32,alpha:1)),
+                      (-12,22,7,6,UIColor(red:0.46,green:0.40,blue:0.34,alpha:1)),
+                      (12,22,6,7,UIColor(red:0.48,green:0.42,blue:0.36,alpha:1)),
+                      (-24,-10,5,6,UIColor(red:0.40,green:0.34,blue:0.28,alpha:1)),
+                      (24,-10,5,7,UIColor(red:0.42,green:0.36,blue:0.30,alpha:1)),
+                      (-24,10,5,6,UIColor(red:0.44,green:0.38,blue:0.32,alpha:1)),
+                      (24,10,6,6,UIColor(red:0.46,green:0.40,blue:0.34,alpha:1))
                   ]
-                  for (x,z,w,h,c) in configs {
-                      addBuilding(scene, at:SCNVector3(x,0,z), w:w, h:h, d:w*0.88, color:c)
-                  }
+                  for (x,z,w,h,c) in configs { addBuilding(scene,at:SCNVector3(x,0,z),w:w,h:h,d:w*0.88,color:c) }
               }
 
-              private static func addBuilding(_ scene: SCNScene, at pos: SCNVector3,
-                                              w: Float, h: Float, d: Float, color: UIColor) {
-                  // Main body
+              private static func addBuilding(_ scene: SCNScene, at pos:SCNVector3,
+                                              w:Float,h:Float,d:Float,color:UIColor) {
                   let geo = SCNBox(width:CGFloat(w),height:CGFloat(h),length:CGFloat(d),chamferRadius:0.08)
                   geo.materials = [matte(color)]
-                  let node = SCNNode(geometry:geo)
-                  node.position = SCNVector3(pos.x, h/2, pos.z)
-                  node.physicsBody = SCNPhysicsBody(type:.static, shape:nil)
+                  let node = SCNNode(geometry:geo); node.position = SCNVector3(pos.x,h/2,pos.z)
+                  node.physicsBody = SCNPhysicsBody(type:.static,shape:nil)
                   node.physicsBody?.categoryBitMask  = PM.wall
                   node.physicsBody?.collisionBitMask = PM.player|PM.enemy|PM.bullet
                   scene.rootNode.addChildNode(node)
-
-                  // Roof (darker)
                   let roofH = w*0.30
                   let roofGeo = SCNPyramid(width:CGFloat(w+0.5),height:CGFloat(roofH),length:CGFloat(d+0.5))
                   roofGeo.materials = [matte(UIColor(red:0.20,green:0.15,blue:0.10,alpha:1))]
-                  let roof = SCNNode(geometry:roofGeo)
-                  roof.position = SCNVector3(pos.x, h+roofH/2, pos.z)
+                  let roof = SCNNode(geometry:roofGeo); roof.position = SCNVector3(pos.x,h+roofH/2,pos.z)
                   scene.rootNode.addChildNode(roof)
-
-                  // Windows (rows of glowing)
-                  let winRows = Int(h/2.5)
-                  let winCols = Int(w/2.2)
+                  let winRows=Int(h/2.5), winCols=Int(w/2.2)
                   for row in 0..<winRows {
                       for col in 0..<winCols {
-                          let on   = Bool.random()
+                          let on = Bool.random()
                           let winC = on
                               ? UIColor(red:CGFloat.random(in:0.7...0.9),green:CGFloat.random(in:0.6...0.80),blue:CGFloat.random(in:0.2...0.4),alpha:1)
                               : UIColor(red:0.08,green:0.06,blue:0.04,alpha:1)
                           let wGeo = SCNBox(width:0.55,height:0.70,length:0.04,chamferRadius:0.06)
                           let wMat = SCNMaterial()
-                          wMat.diffuse.contents  = winC
+                          wMat.diffuse.contents = winC
                           if on { wMat.emission.contents = UIColor(red:0.3,green:0.25,blue:0.05,alpha:1) }
-                          wMat.lightingModel = on ? .constant : .lambert
-                          wGeo.materials = [wMat]
-                          let wx = pos.x - w/2 + 1.5 + Float(col)*2.1
-                          let wy = 1.5 + Float(row)*2.4
-                          let wNode = SCNNode(geometry:wGeo)
-                          wNode.position = SCNVector3(wx, wy, pos.z-d/2-0.02)
+                          wMat.lightingModel = on ? .constant : .lambert; wGeo.materials = [wMat]
+                          let wx = pos.x-w/2+1.5+Float(col)*2.1, wy = 1.5+Float(row)*2.4
+                          let wNode = SCNNode(geometry:wGeo); wNode.position = SCNVector3(wx,wy,pos.z-d/2-0.02)
                           scene.rootNode.addChildNode(wNode)
-                          // Light from lit window
                           if on {
                               let wLight = SCNLight(); wLight.type = .omni
-                              wLight.color = UIColor(red:0.8,green:0.65,blue:0.25,alpha:1)
-                              wLight.intensity = 60
-                              wLight.attenuationStartDistance = 0.5
-                              wLight.attenuationEndDistance   = 5
-                              let wl = SCNNode(); wl.light = wLight
-                              wl.position = SCNVector3(wx, wy, pos.z-d/2-1)
+                              wLight.color = UIColor(red:0.8,green:0.65,blue:0.25,alpha:1); wLight.intensity = 60
+                              wLight.attenuationStartDistance=0.5; wLight.attenuationEndDistance=5
+                              let wl = SCNNode(); wl.light=wLight; wl.position=SCNVector3(wx,wy,pos.z-d/2-1)
                               scene.rootNode.addChildNode(wl)
                           }
                       }
                   }
-
-                  // Door
                   let doorGeo = SCNBox(width:1.0,height:2.0,length:0.05,chamferRadius:0.06)
                   doorGeo.materials = [matte(UIColor(red:0.24,green:0.16,blue:0.08,alpha:1))]
-                  let door = SCNNode(geometry:doorGeo)
-                  door.position = SCNVector3(pos.x, 1.0, pos.z-d/2-0.02)
+                  let door = SCNNode(geometry:doorGeo); door.position = SCNVector3(pos.x,1.0,pos.z-d/2-0.02)
                   scene.rootNode.addChildNode(door)
               }
 
-              // MARK: - Trees (3 types)
               private static func buildTrees(_ scene: SCNScene, _ half: Float) {
-                  let positions: [(Float,Float,Int)] = [
-                      (-9,-9,0),  (9,-9,1),   (-9,9,2),    (9,9,0),
-                      (-14,-5,1), (14,-5,0),  (-14,5,2),   (14,5,1),
-                      (-5,-14,0), (5,-14,2),  (-5,14,1),   (5,14,0),
-                      (-22,-22,1),(22,-22,0), (-22,22,2),  (22,22,1),
-                      (-32,-8,0), (32,-8,1),  (-32,8,2),   (32,8,0),
-                      (-8,-32,1), (8,-32,0),  (-8,32,2),   (8,32,1),
-                      (16,-30,0), (-16,-30,1),(16,30,2),   (-16,30,0),
-                      (-30,16,1), (30,16,0),  (-30,-16,2), (30,-16,1)
+                  let positions:[(Float,Float,Int)] = [
+                      (-9,-9,0),(9,-9,1),(-9,9,2),(9,9,0),(-14,-5,1),(14,-5,0),(-14,5,2),(14,5,1),
+                      (-5,-14,0),(5,-14,2),(-5,14,1),(5,14,0),(-22,-22,1),(22,-22,0),(-22,22,2),(22,22,1),
+                      (-32,-8,0),(32,-8,1),(-32,8,2),(32,8,0),(-8,-32,1),(8,-32,0),(-8,32,2),(8,32,1),
+                      (16,-30,0),(-16,-30,1),(16,30,2),(-16,30,0),(-30,16,1),(30,16,0),(-30,-16,2),(30,-16,1)
                   ]
-                  for (x,z,t) in positions { addTree(scene, at:SCNVector3(x,0,z), type:t) }
+                  for (x,z,t) in positions { addTree(scene,at:SCNVector3(x,0,z),type:t) }
               }
 
               private static func addTree(_ scene: SCNScene, at pos: SCNVector3, type: Int) {
-                  let h   = Float.random(in:3.5...6.5)
-                  let r   = Float.random(in:0.14...0.22)
+                  let h = Float.random(in:3.5...6.5), r = Float.random(in:0.14...0.22)
                   let trunkMat = matte(UIColor(red:CGFloat.random(in:0.22...0.30),
                                                green:CGFloat.random(in:0.13...0.18),
                                                blue:CGFloat.random(in:0.06...0.10),alpha:1))
-                  let trunk = SCNCylinder(radius:CGFloat(r), height:CGFloat(h))
-                  trunk.materials = [trunkMat]
-                  let trunkNode = SCNNode(geometry:trunk)
-                  trunkNode.position = SCNVector3(pos.x, h/2, pos.z)
-                  trunkNode.physicsBody = SCNPhysicsBody(type:.static, shape:nil)
-                  trunkNode.physicsBody?.categoryBitMask  = PM.wall
-                  trunkNode.physicsBody?.collisionBitMask = PM.player|PM.enemy
+                  let trunk = SCNCylinder(radius:CGFloat(r),height:CGFloat(h)); trunk.materials = [trunkMat]
+                  let trunkNode = SCNNode(geometry:trunk); trunkNode.position = SCNVector3(pos.x,h/2,pos.z)
+                  trunkNode.physicsBody = SCNPhysicsBody(type:.static,shape:nil)
+                  trunkNode.physicsBody?.categoryBitMask=PM.wall; trunkNode.physicsBody?.collisionBitMask=PM.player|PM.enemy
                   scene.rootNode.addChildNode(trunkNode)
-
-                  let leafGreen = UIColor(red:CGFloat.random(in:0.08...0.20),
-                                          green:CGFloat.random(in:0.28...0.48),
-                                          blue:CGFloat.random(in:0.06...0.14),alpha:1)
-                  let leafMat = matte(leafGreen)
-
+                  let leafMat = matte(UIColor(red:CGFloat.random(in:0.08...0.20),green:CGFloat.random(in:0.28...0.48),blue:CGFloat.random(in:0.06...0.14),alpha:1))
                   switch type {
-                  case 0: // Conifer (layered cones)
+                  case 0:
                       for i in 0..<3 {
-                          let cR = CGFloat(1.8 - Float(i)*0.35)
-                          let cH: CGFloat = 1.8
-                          let cone = SCNCone(topRadius:0, bottomRadius:cR, height:cH)
-                          cone.materials = [leafMat]
-                          let cNode = SCNNode(geometry:cone)
-                          cNode.position = SCNVector3(pos.x, h+0.5+Float(i)*1.1, pos.z)
-                          scene.rootNode.addChildNode(cNode)
+                          let cone = SCNCone(topRadius:0,bottomRadius:CGFloat(1.8-Float(i)*0.35),height:1.8)
+                          cone.materials=[leafMat]; let cn=SCNNode(geometry:cone)
+                          cn.position=SCNVector3(pos.x,h+0.5+Float(i)*1.1,pos.z); scene.rootNode.addChildNode(cn)
                       }
-                  case 1: // Broad leaf (sphere top)
-                      let sph = SCNSphere(radius:CGFloat(Float.random(in:1.6...2.4)))
-                      sph.materials = [leafMat]
-                      let sNode = SCNNode(geometry:sph)
-                      sNode.position = SCNVector3(pos.x, h+1.5, pos.z)
-                      scene.rootNode.addChildNode(sNode)
-                      // Extra smaller sphere
-                      let sph2 = SCNSphere(radius:CGFloat(Float.random(in:1.0...1.4)))
-                      sph2.materials = [leafMat]
-                      let s2 = SCNNode(geometry:sph2)
-                      s2.position = SCNVector3(pos.x+Float.random(in:-0.8...0.8), h+1.2, pos.z+Float.random(in:-0.8...0.8))
+                  case 1:
+                      let sph=SCNSphere(radius:CGFloat(Float.random(in:1.6...2.4))); sph.materials=[leafMat]
+                      let sn=SCNNode(geometry:sph); sn.position=SCNVector3(pos.x,h+1.5,pos.z); scene.rootNode.addChildNode(sn)
+                      let sph2=SCNSphere(radius:CGFloat(Float.random(in:1.0...1.4))); sph2.materials=[leafMat]
+                      let s2=SCNNode(geometry:sph2)
+                      s2.position=SCNVector3(pos.x+Float.random(in:-0.8...0.8),h+1.2,pos.z+Float.random(in:-0.8...0.8))
                       scene.rootNode.addChildNode(s2)
-                  default: // Dead tree (no leaves, bare branches)
-                      for ang: Float in [0, Float.pi/2, Float.pi, Float.pi*1.5] {
-                          let bLen: Float = Float.random(in:1.2...2.0)
-                          let branch = SCNCylinder(radius:0.06, height:CGFloat(bLen))
-                          branch.materials = [trunkMat]
-                          let bNode = SCNNode(geometry:branch)
-                          bNode.eulerAngles = SCNVector3(Float.pi/4, ang, 0)
-                          bNode.position = SCNVector3(pos.x+cos(ang)*bLen*0.4,
-                                                       h*0.8+bLen*0.35,
-                                                       pos.z+sin(ang)*bLen*0.4)
+                  default:
+                      for ang: Float in [0,Float.pi/2,Float.pi,Float.pi*1.5] {
+                          let bLen: Float=Float.random(in:1.2...2.0)
+                          let branch=SCNCylinder(radius:0.06,height:CGFloat(bLen)); branch.materials=[trunkMat]
+                          let bNode=SCNNode(geometry:branch)
+                          bNode.eulerAngles=SCNVector3(Float.pi/4,ang,0)
+                          bNode.position=SCNVector3(pos.x+cos(ang)*bLen*0.4,h*0.8+bLen*0.35,pos.z+sin(ang)*bLen*0.4)
                           scene.rootNode.addChildNode(bNode)
                       }
                   }
               }
 
-              // MARK: - Lamp Posts
               private static func buildLampPosts(_ scene: SCNScene, _ half: Float) {
-                  let positions: [(Float,Float)] = [
-                      (-5,-12),( 5,-12),(-5,12),(5,12),
-                      (-12,-5),(-12,5),(12,-5),(12,5),
-                      (-20,-5),(-20,5),(20,-5),(20,5),
-                      (-5,-20),(5,-20),(-5,20),(5,20)
+                  let positions:[(Float,Float)] = [
+                      (-5,-12),(5,-12),(-5,12),(5,12),(-12,-5),(-12,5),(12,-5),(12,5),
+                      (-20,-5),(-20,5),(20,-5),(20,5),(-5,-20),(5,-20),(-5,20),(5,20)
                   ]
-                  for (x,z) in positions { addLamp(scene, at:SCNVector3(x,0,z)) }
+                  for (x,z) in positions { addLamp(scene,at:SCNVector3(x,0,z)) }
               }
 
               private static func addLamp(_ scene: SCNScene, at pos: SCNVector3) {
                   let poleMat = matte(UIColor(red:0.22,green:0.20,blue:0.18,alpha:1))
-                  // Pole
-                  let pole = SCNCylinder(radius:0.06, height:4.5)
-                  pole.materials = [poleMat]
-                  let poleNode = SCNNode(geometry:pole)
-                  poleNode.position = SCNVector3(pos.x, 2.25, pos.z)
-                  poleNode.physicsBody = SCNPhysicsBody(type:.static, shape:nil)
-                  poleNode.physicsBody?.categoryBitMask  = PM.wall
-                  poleNode.physicsBody?.collisionBitMask = PM.player|PM.enemy
+                  let pole = SCNCylinder(radius:0.06,height:4.5); pole.materials=[poleMat]
+                  let poleNode = SCNNode(geometry:pole); poleNode.position=SCNVector3(pos.x,2.25,pos.z)
+                  poleNode.physicsBody=SCNPhysicsBody(type:.static,shape:nil)
+                  poleNode.physicsBody?.categoryBitMask=PM.wall; poleNode.physicsBody?.collisionBitMask=PM.player|PM.enemy
                   scene.rootNode.addChildNode(poleNode)
-
-                  // Arm
-                  let arm = SCNCylinder(radius:0.04, height:0.90)
-                  arm.materials = [poleMat]
-                  let armNode = SCNNode(geometry:arm)
-                  armNode.eulerAngles = SCNVector3(0,0,Float.pi/2)
-                  armNode.position    = SCNVector3(pos.x+0.45, 4.5, pos.z)
-                  scene.rootNode.addChildNode(armNode)
-
-                  // Lamp head
-                  let headGeo = SCNBox(width:0.35,height:0.20,length:0.35,chamferRadius:0.04)
-                  let headMat = SCNMaterial()
-                  headMat.diffuse.contents  = UIColor(red:0.85,green:0.80,blue:0.60,alpha:1)
-                  headMat.emission.contents = UIColor(red:0.50,green:0.45,blue:0.20,alpha:1)
-                  headMat.lightingModel     = .constant
-                  headGeo.materials = [headMat]
-                  let headNode = SCNNode(geometry:headGeo)
-                  headNode.position = SCNVector3(pos.x+0.90, 4.42, pos.z)
+                  let arm=SCNCylinder(radius:0.04,height:0.90); arm.materials=[poleMat]
+                  let armNode=SCNNode(geometry:arm); armNode.eulerAngles=SCNVector3(0,0,Float.pi/2)
+                  armNode.position=SCNVector3(pos.x+0.45,4.5,pos.z); scene.rootNode.addChildNode(armNode)
+                  let headGeo=SCNBox(width:0.35,height:0.20,length:0.35,chamferRadius:0.04)
+                  let headMat=SCNMaterial()
+                  headMat.diffuse.contents=UIColor(red:0.85,green:0.80,blue:0.60,alpha:1)
+                  headMat.emission.contents=UIColor(red:0.50,green:0.45,blue:0.20,alpha:1)
+                  headMat.lightingModel = .constant; headGeo.materials=[headMat]
+                  let headNode=SCNNode(geometry:headGeo); headNode.position=SCNVector3(pos.x+0.90,4.42,pos.z)
                   scene.rootNode.addChildNode(headNode)
-
-                  // Point light
-                  let light = SCNLight(); light.type = .omni
-                  light.color   = UIColor(red:1,green:0.92,blue:0.68,alpha:1)
-                  light.intensity = 480
-                  light.attenuationStartDistance = 1; light.attenuationEndDistance = 16
-                  let lNode = SCNNode(); lNode.light = light
-                  lNode.position = SCNVector3(pos.x+0.90, 4.30, pos.z)
+                  let light=SCNLight(); light.type = .omni
+                  light.color=UIColor(red:1,green:0.92,blue:0.68,alpha:1); light.intensity=480
+                  light.attenuationStartDistance=1; light.attenuationEndDistance=16
+                  let lNode=SCNNode(); lNode.light=light; lNode.position=SCNVector3(pos.x+0.90,4.30,pos.z)
                   scene.rootNode.addChildNode(lNode)
-                  // Subtle flicker
                   lNode.runAction(SCNAction.repeatForever(SCNAction.sequence([
-                      SCNAction.run { n in n.light?.intensity = CGFloat.random(in:400...520) },
+                      SCNAction.run{n in n.light?.intensity=CGFloat.random(in:400...520)},
                       SCNAction.wait(duration:Double.random(in:0.08...0.25))
                   ])))
               }
 
-              // MARK: - Fences
               private static func buildFences(_ scene: SCNScene) {
-                  let fMat  = matte(UIColor(red:0.42,green:0.28,blue:0.16,alpha:1))
-                  let posts: [(Float,Float,Float,Float)] = [
-                      (-38,-15,-38,15), (38,-15,38,15),
-                      (-15,-38,15,-38), (-15,38,15,38)
+                  let fMat = matte(UIColor(red:0.42,green:0.28,blue:0.16,alpha:1))
+                  let segs:[(Float,Float,Float,Float)] = [
+                      (-38,-15,-38,15),(38,-15,38,15),(-15,-38,15,-38),(-15,38,15,38)
                   ]
-                  for (x1,z1,x2,z2) in posts {
-                      addFenceSegment(scene,x1:x1,z1:z1,x2:x2,z2:z2,mat:fMat)
-                  }
+                  for (x1,z1,x2,z2) in segs { addFenceSeg(scene,x1:x1,z1:z1,x2:x2,z2:z2,mat:fMat) }
               }
 
-              private static func addFenceSegment(_ scene: SCNScene,
-                                                   x1:Float,z1:Float,x2:Float,z2:Float,
-                                                   mat: SCNMaterial) {
-                  let dx = x2-x1, dz = z2-z1
-                  let len = sqrt(dx*dx+dz*dz)
-                  let steps = Int(len/2.0)
+              private static func addFenceSeg(_ scene:SCNScene,x1:Float,z1:Float,x2:Float,z2:Float,mat:SCNMaterial) {
+                  let dx=x2-x1,dz=z2-z1,len=sqrt(dx*dx+dz*dz)
+                  let steps=Int(len/2.0)
                   for i in 0..<steps {
-                      let t = Float(i)/Float(steps)
-                      let px = x1+dx*t, pz = z1+dz*t
-                      // Post
-                      let post = SCNCylinder(radius:0.06,height:1.2); post.materials = [mat]
-                      let pn   = SCNNode(geometry:post); pn.position = SCNVector3(px,0.60,pz)
+                      let t=Float(i)/Float(steps), px=x1+dx*t, pz=z1+dz*t
+                      let post=SCNCylinder(radius:0.06,height:1.2); post.materials=[mat]
+                      let pn=SCNNode(geometry:post); pn.position=SCNVector3(px,0.60,pz)
                       scene.rootNode.addChildNode(pn)
-                      // Rail
-                      if i < steps-1 {
-                          let rail = SCNBox(width:CGFloat(len/Float(steps))+0.05,height:0.06,length:0.06,chamferRadius:0.01)
-                          rail.materials = [mat]
-                          let rn = SCNNode(geometry:rail)
-                          rn.position = SCNVector3(px+dx/Float(steps)*0.5,0.90,pz+dz/Float(steps)*0.5)
-                          rn.eulerAngles = SCNVector3(0,atan2(dx,dz),0)
-                          scene.rootNode.addChildNode(rn)
-                          let rn2 = SCNNode(geometry:rail)
-                          rn2.position = SCNVector3(px+dx/Float(steps)*0.5,0.45,pz+dz/Float(steps)*0.5)
-                          rn2.eulerAngles = SCNVector3(0,atan2(dx,dz),0)
-                          scene.rootNode.addChildNode(rn2)
+                      if i<steps-1 {
+                          let rLen=CGFloat(len/Float(steps))+0.05
+                          let rail=SCNBox(width:rLen,height:0.06,length:0.06,chamferRadius:0.01); rail.materials=[mat]
+                          for ry: Float in [0.90,0.45] {
+                              let rn=SCNNode(geometry:rail)
+                              rn.position=SCNVector3(px+dx/Float(steps)*0.5,ry,pz+dz/Float(steps)*0.5)
+                              rn.eulerAngles=SCNVector3(0,atan2(dx,dz),0); scene.rootNode.addChildNode(rn)
+                          }
                       }
                   }
               }
 
-              // MARK: - Rocks
               private static func buildRocks(_ scene: SCNScene, _ half: Float) {
                   for _ in 0..<25 {
-                      let r = Float.random(in:0.25...0.85)
-                      let geo = SCNSphere(radius:CGFloat(r))
-                      geo.segmentCount = 8
-                      let gMat = SCNMaterial()
-                      gMat.diffuse.contents = UIColor(red:CGFloat.random(in:0.38...0.52),
-                                                       green:CGFloat.random(in:0.36...0.48),
-                                                       blue:CGFloat.random(in:0.34...0.46),alpha:1)
-                      gMat.roughness.contents = 1.0; gMat.lightingModel = .lambert
-                      geo.materials = [gMat]
-                      let node = SCNNode(geometry:geo)
-                      node.position = SCNVector3(Float.random(in:-half*0.85...half*0.85),
-                                                  r*0.55,
-                                                  Float.random(in:-half*0.85...half*0.85))
-                      node.eulerAngles = SCNVector3(Float.random(in:0...1),Float.random(in:0...3),Float.random(in:0...1))
-                      node.physicsBody = SCNPhysicsBody(type:.static, shape:nil)
-                      node.physicsBody?.categoryBitMask  = PM.wall
-                      node.physicsBody?.collisionBitMask = PM.player|PM.enemy
+                      let r=Float.random(in:0.25...0.85)
+                      let geo=SCNSphere(radius:CGFloat(r)); geo.segmentCount=8
+                      let gMat=SCNMaterial()
+                      gMat.diffuse.contents=UIColor(red:CGFloat.random(in:0.38...0.52),
+                                                     green:CGFloat.random(in:0.36...0.48),
+                                                     blue:CGFloat.random(in:0.34...0.46),alpha:1)
+                      gMat.roughness.contents=1.0; gMat.lightingModel = .lambert; geo.materials=[gMat]
+                      let node=SCNNode(geometry:geo)
+                      node.position=SCNVector3(Float.random(in:-half*0.85...half*0.85),r*0.55,Float.random(in:-half*0.85...half*0.85))
+                      node.eulerAngles=SCNVector3(Float.random(in:0...1),Float.random(in:0...3),Float.random(in:0...1))
+                      node.physicsBody=SCNPhysicsBody(type:.static,shape:nil)
+                      node.physicsBody?.categoryBitMask=PM.wall; node.physicsBody?.collisionBitMask=PM.player|PM.enemy
                       scene.rootNode.addChildNode(node)
                   }
               }
 
-              // MARK: - Bushes
               private static func buildBushes(_ scene: SCNScene, _ half: Float) {
                   for _ in 0..<40 {
-                      let r = Float.random(in:0.30...0.80)
-                      let geo = SCNSphere(radius:CGFloat(r))
-                      geo.segmentCount = 10
-                      let mat = SCNMaterial()
-                      mat.diffuse.contents = UIColor(red:CGFloat.random(in:0.10...0.22),
-                                                      green:CGFloat.random(in:0.28...0.42),
-                                                      blue:CGFloat.random(in:0.06...0.12),alpha:1)
-                      mat.roughness.contents = 1.0; mat.lightingModel = .lambert
-                      geo.materials = [mat]
-                      let node = SCNNode(geometry:geo)
-                      node.position = SCNVector3(Float.random(in:-half*0.85...half*0.85),
-                                                  r*0.65, Float.random(in:-half*0.85...half*0.85))
+                      let r=Float.random(in:0.30...0.80)
+                      let geo=SCNSphere(radius:CGFloat(r)); geo.segmentCount=10
+                      let mat=SCNMaterial()
+                      mat.diffuse.contents=UIColor(red:CGFloat.random(in:0.10...0.22),
+                                                    green:CGFloat.random(in:0.28...0.42),
+                                                    blue:CGFloat.random(in:0.06...0.12),alpha:1)
+                      mat.roughness.contents=1.0; mat.lightingModel = .lambert; geo.materials=[mat]
+                      let node=SCNNode(geometry:geo)
+                      node.position=SCNVector3(Float.random(in:-half*0.85...half*0.85),r*0.65,Float.random(in:-half*0.85...half*0.85))
                       scene.rootNode.addChildNode(node)
                   }
               }
 
-              // MARK: - Grass tufts (decorative vertical blades)
               private static func buildGrassTufts(_ scene: SCNScene, _ half: Float) {
-                  let tMat = matte(UIColor(red:0.25,green:0.50,blue:0.14,alpha:1))
+                  let tMat=matte(UIColor(red:0.25,green:0.50,blue:0.14,alpha:1))
                   for _ in 0..<120 {
-                      let h: Float = Float.random(in:0.20...0.55)
-                      let geo = SCNBox(width:0.04, height:CGFloat(h), length:0.04, chamferRadius:0)
-                      geo.materials = [tMat]
-                      let node = SCNNode(geometry:geo)
-                      node.position = SCNVector3(Float.random(in:-half*0.9...half*0.9),
-                                                  h/2, Float.random(in:-half*0.9...half*0.9))
-                      node.eulerAngles = SCNVector3(0,Float.random(in:0...Float.pi*2),Float.random(in:-0.3...0.3))
+                      let h: Float=Float.random(in:0.20...0.55)
+                      let geo=SCNBox(width:0.04,height:CGFloat(h),length:0.04,chamferRadius:0); geo.materials=[tMat]
+                      let node=SCNNode(geometry:geo)
+                      node.position=SCNVector3(Float.random(in:-half*0.9...half*0.9),h/2,Float.random(in:-half*0.9...half*0.9))
+                      node.eulerAngles=SCNVector3(0,Float.random(in:0...Float.pi*2),Float.random(in:-0.3...0.3))
                       scene.rootNode.addChildNode(node)
                   }
               }
 
-              // MARK: - Cars/Vehicles
               private static func buildCars(_ scene: SCNScene) {
-                  let carPositions: [(Float,Float,Float)] = [
-                      (-4,-18,0), (4,-18,Float.pi),
-                      (-4,18,Float.pi), (4,18,0),
-                      (-18,-4,Float.pi/2), (-18,4,-Float.pi/2),
-                      (18,-4,-Float.pi/2),(18,4,Float.pi/2)
+                  let carPos:[(Float,Float,Float)] = [
+                      (-4,-18,0),(4,-18,Float.pi),(-4,18,Float.pi),(4,18,0),
+                      (-18,-4,Float.pi/2),(-18,4,-Float.pi/2),(18,-4,-Float.pi/2),(18,4,Float.pi/2)
                   ]
-                  let colors: [UIColor] = [
-                      UIColor(red:0.75,green:0.12,blue:0.12,alpha:1),
-                      UIColor(red:0.12,green:0.25,blue:0.65,alpha:1),
-                      UIColor(red:0.20,green:0.20,blue:0.22,alpha:1),
-                      UIColor(red:0.70,green:0.60,blue:0.12,alpha:1),
+                  let colors:[UIColor] = [
+                      UIColor(red:0.75,green:0.12,blue:0.12,alpha:1),UIColor(red:0.12,green:0.25,blue:0.65,alpha:1),
+                      UIColor(red:0.20,green:0.20,blue:0.22,alpha:1),UIColor(red:0.70,green:0.60,blue:0.12,alpha:1),
                       UIColor(red:0.55,green:0.55,blue:0.58,alpha:1)
                   ]
-                  for (i,(x,z,rot)) in carPositions.enumerated() {
-                      addCar(scene, at:SCNVector3(x,0,z), rot:rot, color:colors[i%colors.count])
+                  for (i,(x,z,rot)) in carPos.enumerated() {
+                      addCar(scene,at:SCNVector3(x,0,z),rot:rot,color:colors[i%colors.count])
                   }
               }
 
-              private static func addCar(_ scene: SCNScene, at pos: SCNVector3, rot: Float, color: UIColor) {
-                  let carNode = SCNNode(); carNode.position = pos; carNode.eulerAngles.y = rot
-                  // Body
-                  let bodyGeo = SCNBox(width:1.8,height:0.70,length:3.8,chamferRadius:0.12)
-                  bodyGeo.materials = [matte(color)]
-                  let body = SCNNode(geometry:bodyGeo); body.position = SCNVector3(0,0.45,0)
-                  carNode.addChildNode(body)
-                  // Cabin
-                  let cabGeo = SCNBox(width:1.6,height:0.55,length:2.0,chamferRadius:0.10)
-                  let winMat = SCNMaterial()
-                  winMat.diffuse.contents  = UIColor(red:0.40,green:0.55,blue:0.70,alpha:0.70)
-                  winMat.emission.contents = UIColor(red:0.05,green:0.08,blue:0.12,alpha:1)
-                  winMat.transparency = 0.60; winMat.lightingModel = .constant
-                  cabGeo.materials = [matte(color), matte(color), winMat, winMat, winMat, winMat]
-                  let cab = SCNNode(geometry:cabGeo); cab.position = SCNVector3(0,0.975,0.1)
-                  carNode.addChildNode(cab)
-                  // Wheels
-                  let wheelMat = matte(UIColor(red:0.10,green:0.10,blue:0.10,alpha:1))
-                  for (wx,wz): (Float,Float) in [(-1.0,-1.3),(1.0,-1.3),(-1.0,1.3),(1.0,1.3)] {
-                      let wGeo = SCNCylinder(radius:0.32,height:0.22); wGeo.materials = [wheelMat]
-                      let wNode = SCNNode(geometry:wGeo)
-                      wNode.eulerAngles = SCNVector3(0,0,Float.pi/2)
-                      wNode.position    = SCNVector3(wx,0.32,wz)
-                      carNode.addChildNode(wNode)
+              private static func addCar(_ scene:SCNScene, at pos:SCNVector3, rot:Float, color:UIColor) {
+                  let carNode=SCNNode(); carNode.position=pos; carNode.eulerAngles.y=rot
+                  let bodyGeo=SCNBox(width:1.8,height:0.70,length:3.8,chamferRadius:0.12)
+                  bodyGeo.materials=[matte(color)]
+                  let body=SCNNode(geometry:bodyGeo); body.position=SCNVector3(0,0.45,0); carNode.addChildNode(body)
+                  let cabGeo=SCNBox(width:1.6,height:0.55,length:2.0,chamferRadius:0.10)
+                  let winMat=SCNMaterial()
+                  winMat.diffuse.contents=UIColor(red:0.40,green:0.55,blue:0.70,alpha:0.70)
+                  winMat.emission.contents=UIColor(red:0.05,green:0.08,blue:0.12,alpha:1)
+                  winMat.transparency=0.60; winMat.lightingModel = .constant
+                  cabGeo.materials=[matte(color),matte(color),winMat,winMat,winMat,winMat]
+                  let cab=SCNNode(geometry:cabGeo); cab.position=SCNVector3(0,0.975,0.1); carNode.addChildNode(cab)
+                  let wheelMat=matte(UIColor(red:0.10,green:0.10,blue:0.10,alpha:1))
+                  for (wx,wz):(Float,Float) in [(-1.0,-1.3),(1.0,-1.3),(-1.0,1.3),(1.0,1.3)] {
+                      let wGeo=SCNCylinder(radius:0.32,height:0.22); wGeo.materials=[wheelMat]
+                      let wNode=SCNNode(geometry:wGeo); wNode.eulerAngles=SCNVector3(0,0,Float.pi/2)
+                      wNode.position=SCNVector3(wx,0.32,wz); carNode.addChildNode(wNode)
                   }
-                  carNode.physicsBody = SCNPhysicsBody(type:.static, shape:nil)
-                  carNode.physicsBody?.categoryBitMask  = PM.wall
-                  carNode.physicsBody?.collisionBitMask = PM.player|PM.enemy|PM.bullet
+                  carNode.physicsBody=SCNPhysicsBody(type:.static,shape:nil)
+                  carNode.physicsBody?.categoryBitMask=PM.wall; carNode.physicsBody?.collisionBitMask=PM.player|PM.enemy|PM.bullet
                   scene.rootNode.addChildNode(carNode)
               }
 
-              // MARK: - Border walls
               private static func buildBorders(_ scene: SCNScene, _ half: Float) {
                   let h: Float=9, t: Float=2, s=half*2
-                  let wc = UIColor(red:0.18,green:0.14,blue:0.10,alpha:1)
-                  for (x,y,z,w,hh,d): (Float,Float,Float,Float,Float,Float) in [
-                      (0,h/2,-(half+t/2),s+t*2,h,t), (0,h/2,half+t/2,s+t*2,h,t),
-                      (-(half+t/2),h/2,0,t,h,s),     (half+t/2,h/2,0,t,h,s)
-                  ] {
-                      addBox(scene,w:w,h:hh,d:d,at:SCNVector3(x,y,z),mat:matte(wc),physics:true)
-                  }
+                  let wc=UIColor(red:0.18,green:0.14,blue:0.10,alpha:1)
+                  for (x,y,z,w,hh,d):(Float,Float,Float,Float,Float,Float) in [
+                      (0,h/2,-(half+t/2),s+t*2,h,t),(0,h/2,half+t/2,s+t*2,h,t),
+                      (-(half+t/2),h/2,0,t,h,s),((half+t/2),h/2,0,t,h,s)
+                  ] { addBox(scene,w:w,h:hh,d:d,at:SCNVector3(x,y,z),mat:matte(wc),physics:true) }
               }
 
-              // MARK: - Sky & Fog
               private static func addSkyAndFog(_ scene: SCNScene) {
-                  scene.background.contents = UIColor(red:0.04,green:0.03,blue:0.08,alpha:1)
-                  scene.fogColor           = UIColor(red:0.06,green:0.05,blue:0.10,alpha:1)
-                  scene.fogStartDistance   = 22
-                  scene.fogEndDistance     = 75
-                  scene.fogDensityExponent = 0.55
+                  scene.background.contents    = UIColor(red:0.04,green:0.03,blue:0.08,alpha:1)
+                  scene.fogColor               = UIColor(red:0.06,green:0.05,blue:0.10,alpha:1)
+                  scene.fogStartDistance       = 22
+                  scene.fogEndDistance         = 75
+                  scene.fogDensityExponent     = 0.55
               }
 
-              // MARK: - Helpers
               private static func matte(_ c: UIColor) -> SCNMaterial {
-                  let m = SCNMaterial()
-                  m.diffuse.contents = c; m.roughness.contents = 0.88; m.lightingModel = .lambert
-                  return m
+                  let m=SCNMaterial(); m.diffuse.contents=c; m.roughness.contents=0.88; m.lightingModel = .lambert; return m
               }
 
-              private static func addBox(_ scene: SCNScene, w:Float, h:Float, d:Float,
+              private static func addBox(_ scene:SCNScene, w:Float, h:Float, d:Float,
                                          at pos:SCNVector3, mat:SCNMaterial, physics:Bool) {
-                  let geo = SCNBox(width:CGFloat(w),height:CGFloat(h),length:CGFloat(d),chamferRadius:0)
-                  geo.materials = [mat]
-                  let node = SCNNode(geometry:geo); node.position = pos
+                  let geo=SCNBox(width:CGFloat(w),height:CGFloat(h),length:CGFloat(d),chamferRadius:0)
+                  geo.materials=[mat]; let node=SCNNode(geometry:geo); node.position=pos
                   if physics {
-                      node.physicsBody = SCNPhysicsBody(type:.static, shape:nil)
-                      node.physicsBody?.categoryBitMask  = PM.wall
-                      node.physicsBody?.collisionBitMask = PM.player|PM.enemy|PM.bullet
+                      node.physicsBody=SCNPhysicsBody(type:.static,shape:nil)
+                      node.physicsBody?.categoryBitMask=PM.wall; node.physicsBody?.collisionBitMask=PM.player|PM.enemy|PM.bullet
                   }
                   scene.rootNode.addChildNode(node)
               }
           }
           ENDOFFILE
 
-      # ───────────────────────────────────────────────────────────────────────────
-      # GameViewController – Main game engine
-      # ───────────────────────────────────────────────────────────────────────────
+      # ── GameViewController (FIX: label func + .identity) ─────────────────────
       - name: GameViewController.swift
         run: |
           cat > DT3D/Sources/GameViewController.swift << 'ENDOFFILE'
@@ -1417,16 +1171,12 @@ jobs:
                                     SCNSceneRendererDelegate,
                                     SCNPhysicsContactDelegate {
 
-              // MARK: – Core
               private var scnView:  SCNView!
               private var scene:    SCNScene!
+              private var player:   HumanNode!
+              private var cameraArm:  SCNNode!
+              private var cameraNode: SCNNode!
 
-              // MARK: – Player
-              private var player:      HumanNode!
-              private var cameraArm:   SCNNode!
-              private var cameraNode:  SCNNode!
-
-              // MARK: – State
               private var health      : Float        = 100
               private var maxHealth   : Float        = 100
               private var ammo        : Int          = 30
@@ -1447,14 +1197,12 @@ jobs:
               private var cameraYaw   : Float        = 0
               private let mapHalf     : Float        = 42.0
 
-              // MARK: – Input
               private var moveJS:    JoystickView!
               private var aimJS:     JoystickView!
               private var hudView:   HUDOverlay!
               private var lastAimPt: CGPoint = .zero
               private weak var aimTouch: UITouch?
 
-              // MARK: – Lifecycle
               override func viewDidLoad() {
                   super.viewDidLoad()
                   setupScene()
@@ -1475,15 +1223,13 @@ jobs:
               override var supportedInterfaceOrientations: UIInterfaceOrientationMask { return .landscape }
               override var prefersHomeIndicatorAutoHidden: Bool { return true }
 
-              // MARK: – Scene
               private func setupScene() {
                   scnView = SCNView(frame:view.bounds)
-                  scnView.autoresizingMask       = [.flexibleWidth,.flexibleHeight]
-                  scnView.backgroundColor        = UIColor(red:0.03,green:0.02,blue:0.05,alpha:1)
-                  scnView.antialiasingMode        = .multisampling4X
+                  scnView.autoresizingMask        = [.flexibleWidth,.flexibleHeight]
+                  scnView.backgroundColor         = UIColor(red:0.03,green:0.02,blue:0.05,alpha:1)
+                  scnView.antialiasingMode         = .multisampling4X
                   scnView.preferredFramesPerSecond = 60
                   view.addSubview(scnView)
-
                   scene = SCNScene()
                   scene.physicsWorld.contactDelegate = self
                   scene.physicsWorld.gravity         = SCNVector3(0,-12,0)
@@ -1492,274 +1238,216 @@ jobs:
                   scnView.isPlaying = true
               }
 
-              // MARK: – Player
               private func spawnPlayer() {
                   player = HumanNode(); player.position = SCNVector3(0,0.90,0)
                   scene.rootNode.addChildNode(player)
               }
 
-              // MARK: – Camera (Third-Person over shoulder)
               private func setupCamera() {
-                  cameraArm = SCNNode()
-                  cameraArm.position = SCNVector3(0,1.9,0)
+                  cameraArm = SCNNode(); cameraArm.position = SCNVector3(0,1.9,0)
                   player.addChildNode(cameraArm)
-
                   cameraNode = SCNNode()
                   let cam = SCNCamera()
-                  cam.fieldOfView        = 72
-                  cam.zFar               = 220
-                  cam.zNear              = 0.05
-                  cam.motionBlurIntensity = 0.20
-                  cam.bloomIntensity      = 0.5
-                  cam.vignettingIntensity = 0.4
-                  cam.vignettingPower     = 0.8
-                  cameraNode.camera      = cam
-                  cameraNode.position    = SCNVector3(0.5, 2.6, 7.0)
-                  cameraNode.eulerAngles = SCNVector3(-0.20, 0, 0)
-                  cameraArm.addChildNode(cameraNode)
-                  scnView.pointOfView = cameraNode
+                  cam.fieldOfView=72; cam.zFar=220; cam.zNear=0.05
+                  cam.motionBlurIntensity=0.20; cam.bloomIntensity=0.5
+                  cam.vignettingIntensity=0.4; cam.vignettingPower=0.8
+                  cameraNode.camera=cam; cameraNode.position=SCNVector3(0.5,2.6,7.0)
+                  cameraNode.eulerAngles=SCNVector3(-0.20,0,0)
+                  cameraArm.addChildNode(cameraNode); scnView.pointOfView=cameraNode
               }
 
-              // MARK: – Lighting
               private func setupLighting() {
                   scnView.autoenablesDefaultLighting = false
-
-                  // Moon (directional + shadows)
-                  let moon = SCNLight(); moon.type = .directional
-                  moon.color    = UIColor(red:0.50,green:0.50,blue:0.72,alpha:1)
-                  moon.intensity = 700
-                  moon.castsShadow   = true
-                  moon.shadowRadius  = 4
-                  moon.shadowColor   = UIColor(white:0,alpha:0.72)
-                  moon.shadowMapSize = CGSize(width:2048,height:2048)
-                  let moonNode = SCNNode(); moonNode.light = moon
-                  moonNode.eulerAngles = SCNVector3(-0.60, 0.35, 0)
+                  let moon=SCNLight(); moon.type = .directional
+                  moon.color=UIColor(red:0.50,green:0.50,blue:0.72,alpha:1); moon.intensity=700
+                  moon.castsShadow=true; moon.shadowRadius=4
+                  moon.shadowColor=UIColor(white:0,alpha:0.72)
+                  moon.shadowMapSize=CGSize(width:2048,height:2048)
+                  let moonNode=SCNNode(); moonNode.light=moon; moonNode.eulerAngles=SCNVector3(-0.60,0.35,0)
                   scene.rootNode.addChildNode(moonNode)
-
-                  // Ambient (blue-ish night)
-                  let amb = SCNLight(); amb.type = .ambient
-                  amb.color     = UIColor(red:0.05,green:0.05,blue:0.10,alpha:1)
-                  amb.intensity = 180
-                  let ambNode = SCNNode(); ambNode.light = amb
-                  scene.rootNode.addChildNode(ambNode)
+                  let amb=SCNLight(); amb.type = .ambient
+                  amb.color=UIColor(red:0.05,green:0.05,blue:0.10,alpha:1); amb.intensity=180
+                  let ambNode=SCNNode(); ambNode.light=amb; scene.rootNode.addChildNode(ambNode)
               }
 
-              // MARK: – HUD
               private func setupHUD() {
                   hudView = HUDOverlay(frame:view.bounds)
                   hudView.autoresizingMask    = [.flexibleWidth,.flexibleHeight]
                   hudView.isUserInteractionEnabled = true
                   view.addSubview(hudView)
-                  hudView.shootBtn.addTarget(self, action:#selector(onShootDown), for:.touchDown)
-                  hudView.shootBtn.addTarget(self, action:#selector(onShootUp),
+                  hudView.shootBtn.addTarget(self,action:#selector(onShootDown),for:.touchDown)
+                  hudView.shootBtn.addTarget(self,action:#selector(onShootUp),
                                               for:[.touchUpInside,.touchUpOutside,.touchCancel])
               }
               @objc private func onShootDown() { isShooting = true  }
               @objc private func onShootUp()   { isShooting = false }
 
-              // MARK: – Joysticks
               private func setupJoysticks() {
-                  let jR = view.bounds.height * 0.14
-                  moveJS = JoystickView(radius:jR)
-                  moveJS.center = CGPoint(x:jR+30, y:view.bounds.height-jR-30)
+                  let jR = view.bounds.height*0.14
+                  moveJS = JoystickView(radius:jR); moveJS.center=CGPoint(x:jR+30,y:view.bounds.height-jR-30)
                   view.addSubview(moveJS)
-
                   aimJS = JoystickView(radius:jR)
-                  aimJS.center = CGPoint(x:view.bounds.width-jR-30-100, y:view.bounds.height-jR-30)
+                  aimJS.center=CGPoint(x:view.bounds.width-jR-30-100,y:view.bounds.height-jR-30)
                   view.addSubview(aimJS)
               }
 
-              // MARK: – Touch
               override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
                   for t in touches {
-                      let pt = t.location(in:view)
-                      if moveJS.frame.contains(pt) && moveJS.trackingTouch == nil {
-                          moveJS.trackingTouch = t
-                      } else if aimJS.frame.contains(pt) && aimJS.trackingTouch == nil {
-                          aimJS.trackingTouch = t; aimTouch = t; lastAimPt = pt
+                      let pt=t.location(in:view)
+                      if moveJS.frame.contains(pt) && moveJS.trackingTouch==nil { moveJS.trackingTouch=t }
+                      else if aimJS.frame.contains(pt) && aimJS.trackingTouch==nil {
+                          aimJS.trackingTouch=t; aimTouch=t; lastAimPt=pt
                       }
                   }
               }
               override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
                   for t in touches {
-                      let pt = t.location(in:view)
-                      if t === moveJS.trackingTouch { moveJS.move(t, in:view) }
-                      if t === aimJS.trackingTouch  {
-                          aimJS.move(t, in:view)
-                          cameraYaw -= Float(pt.x-lastAimPt.x)*0.0052
-                          lastAimPt  = pt
+                      let pt=t.location(in:view)
+                      if t===moveJS.trackingTouch { moveJS.move(t,in:view) }
+                      if t===aimJS.trackingTouch  {
+                          aimJS.move(t,in:view); cameraYaw -= Float(pt.x-lastAimPt.x)*0.0052; lastAimPt=pt
                       }
                   }
               }
               override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
                   for t in touches {
-                      if t === moveJS.trackingTouch { moveJS.reset() }
-                      if t === aimJS.trackingTouch  { aimJS.reset(); aimTouch = nil }
+                      if t===moveJS.trackingTouch { moveJS.reset() }
+                      if t===aimJS.trackingTouch  { aimJS.reset(); aimTouch=nil }
                   }
               }
               override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
-                  touchesEnded(touches, with:event)
+                  touchesEnded(touches,with:event)
               }
 
-              // MARK: – Game Loop
               func renderer(_ renderer: SCNSceneRenderer, updateAtTime time: TimeInterval) {
                   guard !isGameOver else { return }
-                  let dt = lastTime == 0 ? 0 : Float(min(time-lastTime, 0.05))
+                  let dt = lastTime==0 ? 0 : Float(min(time-lastTime,0.05))
                   lastTime = time
-                  movePlayer(dt:dt)
-                  updateCamera()
+                  movePlayer(dt:dt); updateCamera()
                   if isShooting { tryShoot(time:time) }
-                  updateEnemies(time:time, dt:dt)
-                  updateWaves(dt:dt)
-                  cleanBullets()
+                  updateEnemies(time:time,dt:dt); updateWaves(dt:dt); cleanBullets()
                   DispatchQueue.main.async { [weak self] in
-                      guard let s = self else { return }
-                      s.hudView.update(hp:s.health, maxHp:s.maxHealth, ammo:s.ammo,
-                                       totalAmmo:s.totalAmmo, score:s.score, wave:s.wave,
-                                       isReloading:s.isReloading, weapon:"PISTOL")
-                      if s.health <= 0 && !s.isGameOver { s.endGame(victory:false) }
+                      guard let s=self else { return }
+                      s.hudView.update(hp:s.health,maxHp:s.maxHealth,ammo:s.ammo,totalAmmo:s.totalAmmo,
+                                       score:s.score,wave:s.wave,isReloading:s.isReloading,weapon:"PISTOL")
+                      if s.health<=0 && !s.isGameOver { s.endGame(victory:false) }
                   }
               }
 
-              // MARK: – Movement
               private func movePlayer(dt: Float) {
-                  let mv  = moveJS.velocity
-                  let len = sqrt(mv.x*mv.x+mv.y*mv.y)
-                  if len > 0.12 {
-                      let speed: Float = 5.5
-                      let fwd = SIMD3<Float>(-sin(cameraYaw),0,-cos(cameraYaw))
-                      let rgt = SIMD3<Float>( cos(cameraYaw),0,-sin(cameraYaw))
-                      var dir = fwd*(-mv.y)+rgt*mv.x
-                      let dl  = sqrt(dir.x*dir.x+dir.y*dir.y+dir.z*dir.z)
-                      if dl > 0 { dir = dir/dl }
-                      var np = player.simdPosition + dir*speed*dt
-                      let b  = mapHalf-1.8
-                      np.x = max(-b,min(b,np.x)); np.z = max(-b,min(b,np.z))
-                      player.simdPosition = np
-                      player.eulerAngles.y = atan2(dir.x,dir.z)
+                  let mv=moveJS.velocity, len=sqrt(mv.x*mv.x+mv.y*mv.y)
+                  if len>0.12 {
+                      let speed: Float=5.5
+                      let fwd=SIMD3<Float>(-sin(cameraYaw),0,-cos(cameraYaw))
+                      let rgt=SIMD3<Float>( cos(cameraYaw),0,-sin(cameraYaw))
+                      var dir=fwd*(-mv.y)+rgt*mv.x
+                      let dl=sqrt(dir.x*dir.x+dir.y*dir.y+dir.z*dir.z)
+                      if dl>0 { dir=dir/dl }
+                      var np=player.simdPosition+dir*speed*dt
+                      let b=mapHalf-1.8
+                      np.x=max(-b,min(b,np.x)); np.z=max(-b,min(b,np.z))
+                      player.simdPosition=np; player.eulerAngles.y=atan2(dir.x,dir.z)
                       player.startWalk()
-                  } else {
-                      player.stopWalk()
-                  }
+                  } else { player.stopWalk() }
               }
 
-              private func updateCamera() { cameraArm.eulerAngles.y = cameraYaw }
+              private func updateCamera() { cameraArm.eulerAngles.y=cameraYaw }
 
-              // MARK: – Shooting
               private func tryShoot(time: TimeInterval) {
-                  guard canShoot, !isReloading, time-lastShot > 0.20 else {
-                      if ammo == 0 && !isReloading { reload() }; return
+                  guard canShoot,!isReloading,time-lastShot>0.20 else {
+                      if ammo==0 && !isReloading { reload() }; return
                   }
-                  guard ammo > 0 else { reload(); return }
-                  lastShot = time; ammo -= 1
-
-                  let wt   = cameraNode.presentation.worldTransform
-                  let cPos = SCNVector3(wt.m41, wt.m42, wt.m43)
-                  let fLen = sqrt(wt.m31*wt.m31+wt.m32*wt.m32+wt.m33*wt.m33)
-                  let fx   = -wt.m31/fLen, fy = -wt.m32/fLen, fz = -wt.m33/fLen
-
-                  // Bullet visual
-                  let bGeo = SCNCapsule(capRadius:0.038, height:0.32)
-                  let bMat = SCNMaterial()
-                  bMat.diffuse.contents  = UIColor(red:1,green:0.92,blue:0.22,alpha:1)
-                  bMat.emission.contents = UIColor(red:1,green:0.75,blue:0.10,alpha:1)
-                  bMat.lightingModel     = .constant; bGeo.materials = [bMat]
-                  let bullet = SCNNode(geometry:bGeo); bullet.name = "bullet"
-                  bullet.position = SCNVector3(cPos.x+fx*1.2, cPos.y+fy*1.2, cPos.z+fz*1.2)
-
-                  let bBody = SCNPhysicsBody(type:.dynamic,
+                  guard ammo>0 else { reload(); return }
+                  lastShot=time; ammo -= 1
+                  let wt=cameraNode.presentation.worldTransform
+                  let cPos=SCNVector3(wt.m41,wt.m42,wt.m43)
+                  let fLen=sqrt(wt.m31*wt.m31+wt.m32*wt.m32+wt.m33*wt.m33)
+                  let fx = -wt.m31/fLen, fy = -wt.m32/fLen, fz = -wt.m33/fLen
+                  let bGeo=SCNCapsule(capRadius:0.038,height:0.32)
+                  let bMat=SCNMaterial()
+                  bMat.diffuse.contents=UIColor(red:1,green:0.92,blue:0.22,alpha:1)
+                  bMat.emission.contents=UIColor(red:1,green:0.75,blue:0.10,alpha:1)
+                  bMat.lightingModel = .constant; bGeo.materials=[bMat]
+                  let bullet=SCNNode(geometry:bGeo); bullet.name="bullet"
+                  bullet.position=SCNVector3(cPos.x+fx*1.2,cPos.y+fy*1.2,cPos.z+fz*1.2)
+                  let bBody=SCNPhysicsBody(type:.dynamic,
                       shape:SCNPhysicsShape(geometry:SCNCapsule(capRadius:0.038,height:0.32),options:nil))
-                  bBody.categoryBitMask    = PM.bullet
-                  bBody.contactTestBitMask = PM.enemy | PM.wall
-                  bBody.collisionBitMask   = PM.none
-                  bBody.isAffectedByGravity = false
-                  bBody.damping  = 0
-                  bBody.velocity = SCNVector3(fx*58, fy*58, fz*58)
-                  bullet.physicsBody = bBody
-                  scene.rootNode.addChildNode(bullet)
-                  bullets.append(bullet)
-
-                  // Muzzle flash light
-                  let fl = SCNLight(); fl.type = .omni
-                  fl.color = UIColor(red:1,green:0.85,blue:0.4,alpha:1); fl.intensity = 600
-                  fl.attenuationStartDistance = 0.5; fl.attenuationEndDistance = 5
-                  let fln = SCNNode(); fln.light = fl
-                  fln.position = SCNVector3(cPos.x+fx*1.5, cPos.y+fy*1.5, cPos.z+fz*1.5)
+                  bBody.categoryBitMask=PM.bullet; bBody.contactTestBitMask=PM.enemy|PM.wall
+                  bBody.collisionBitMask=PM.none; bBody.isAffectedByGravity=false; bBody.damping=0
+                  bBody.velocity=SCNVector3(fx*58,fy*58,fz*58); bullet.physicsBody=bBody
+                  scene.rootNode.addChildNode(bullet); bullets.append(bullet)
+                  let fl=SCNLight(); fl.type = .omni
+                  fl.color=UIColor(red:1,green:0.85,blue:0.4,alpha:1); fl.intensity=600
+                  fl.attenuationStartDistance=0.5; fl.attenuationEndDistance=5
+                  let fln=SCNNode(); fln.light=fl
+                  fln.position=SCNVector3(cPos.x+fx*1.5,cPos.y+fy*1.5,cPos.z+fz*1.5)
                   scene.rootNode.addChildNode(fln)
-                  fln.runAction(SCNAction.sequence([
-                      SCNAction.wait(duration:0.06),
-                      SCNAction.removeFromParentNode()
-                  ]))
-
+                  fln.runAction(SCNAction.sequence([SCNAction.wait(duration:0.06),SCNAction.removeFromParentNode()]))
                   bullet.runAction(SCNAction.sequence([
                       SCNAction.wait(duration:2.5),
-                      SCNAction.run { [weak self] n in self?.bullets.removeAll{$0===n} },
+                      SCNAction.run{[weak self] n in self?.bullets.removeAll{$0===n}},
                       SCNAction.removeFromParentNode()
                   ]))
-                  if ammo == 0 { reload() }
+                  if ammo==0 { reload() }
               }
 
               private func reload() {
-                  guard !isReloading, totalAmmo > 0 else { return }
-                  isReloading = true; canShoot = false
+                  guard !isReloading, totalAmmo>0 else { return }
+                  isReloading=true; canShoot=false
                   DispatchQueue.main.async { [weak self] in
-                      self?.hudView.showMessage("Reloading...", color:.orange, dur:1.2)
+                      self?.hudView.showMessage("Reloading...",color:.orange,dur:1.2)
                   }
                   DispatchQueue.main.asyncAfter(deadline:.now()+1.35) { [weak self] in
-                      guard let s = self else { return }
-                      let load = min(30-s.ammo, s.totalAmmo)
-                      s.ammo += load; s.totalAmmo -= load
-                      s.isReloading = false; s.canShoot = true
+                      guard let s=self else { return }
+                      let load=min(30-s.ammo,s.totalAmmo)
+                      s.ammo+=load; s.totalAmmo-=load; s.isReloading=false; s.canShoot=true
                   }
               }
 
-              private func cleanBullets() { bullets = bullets.filter{$0.parent != nil} }
+              private func cleanBullets() { bullets=bullets.filter{$0.parent != nil} }
 
-              // MARK: – Enemy AI
               private func updateEnemies(time: TimeInterval, dt: Float) {
-                  enemies = enemies.filter{$0.parent != nil && $0.isAlive}
+                  enemies=enemies.filter{$0.parent != nil && $0.isAlive}
                   for e in enemies {
-                      e.moveToward(target:player.position, dt:dt)
-                      if e.distTo(player.position) < e.kind.atRange+0.6 && e.canAtk(at:time) {
-                          e.lastAtk = time
-                          health -= e.kind.dmg
+                      e.moveToward(target:player.position,dt:dt)
+                      if e.distTo(player.position)<e.kind.atRange+0.6 && e.canAtk(at:time) {
+                          e.lastAtk=time; health-=e.kind.dmg
                           DispatchQueue.main.async { [weak self] in self?.flashRed() }
                       }
                   }
               }
 
-              // MARK: – Waves
               private func updateWaves(dt: Float) {
                   if waveActive {
                       if enemies.filter({$0.isAlive}).isEmpty {
-                          waveActive = false; waveTimer = 5.0; score += 500
+                          waveActive=false; waveTimer=5.0; score+=500
                           if bossSpawned { endGame(victory:true); return }
                           DispatchQueue.main.async { [weak self] in
-                              guard let s = self else { return }
+                              guard let s=self else { return }
                               s.hudView.showMessage("✔ WAVE CLEAR  +500",
-                                  color:UIColor(red:0.2,green:1,blue:0.2,alpha:1), dur:2.5)
+                                  color:UIColor(red:0.2,green:1,blue:0.2,alpha:1),dur:2.5)
                               if s.wave%2==0 { s.dropAmmo() }
                           }
                       }
                   } else {
-                      waveTimer -= Double(dt)
-                      if waveTimer <= 0 { spawnWave() }
+                      waveTimer-=Double(dt)
+                      if waveTimer<=0 { spawnWave() }
                   }
               }
 
               private func spawnWave() {
-                  wave += 1; waveActive = true
+                  wave+=1; waveActive=true
                   DispatchQueue.main.async { [weak self] in
-                      guard let s = self else { return }
+                      guard let s=self else { return }
                       s.hudView.showMessage("⚠ WAVE \(s.wave) ⚠",
-                          color:UIColor(red:1,green:0.15,blue:0.15,alpha:1), dur:2.2)
+                          color:UIColor(red:1,green:0.15,blue:0.15,alpha:1),dur:2.2)
                   }
-                  if wave == 5 { spawnBoss(); return }
-                  var pool: [ZKind] = []
+                  if wave==5 { spawnBoss(); return }
+                  var pool:[ZKind]=[]
                   for _ in 0..<(3+wave*2) { pool.append(.walker) }
                   for _ in 0..<(wave/2)   { pool.append(.brute) }
                   for _ in 0..<(wave/2)   { pool.append(.runner) }
-                  if wave > 3             { pool.append(.cultist) }
+                  if wave>3               { pool.append(.cultist) }
                   for (i,k) in pool.enumerated() {
                       DispatchQueue.main.asyncAfter(deadline:.now()+Double(i)*0.40) { [weak self] in
                           self?.spawnZombie(kind:k)
@@ -1768,12 +1456,12 @@ jobs:
               }
 
               private func spawnBoss() {
-                  bossSpawned = true
+                  bossSpawned=true
                   DispatchQueue.main.async { [weak self] in
                       self?.hudView.showMessage("💀 EL GIGANTE 💀",
-                          color:UIColor(red:1,green:0,blue:0,alpha:1), dur:3.5)
+                          color:UIColor(red:1,green:0,blue:0,alpha:1),dur:3.5)
                   }
-                  spawnZombie(kind:.boss, at:SCNVector3(-(mapHalf*0.55),0,-(mapHalf*0.55)))
+                  spawnZombie(kind:.boss,at:SCNVector3(-(mapHalf*0.55),0,-(mapHalf*0.55)))
                   for i in 0..<6 {
                       DispatchQueue.main.asyncAfter(deadline:.now()+Double(i)*0.45) { [weak self] in
                           self?.spawnZombie(kind:.walker)
@@ -1782,15 +1470,12 @@ jobs:
               }
 
               private func spawnZombie(kind: ZKind, at pos: SCNVector3? = nil) {
-                  let z = ZombieNode(kind:kind)
-                  z.position   = pos ?? randomEdge()
-                  z.position.y = 0
-                  scene.rootNode.addChildNode(z)
-                  enemies.append(z)
+                  let z=ZombieNode(kind:kind); z.position=pos ?? randomEdge(); z.position.y=0
+                  scene.rootNode.addChildNode(z); enemies.append(z)
               }
 
               private func randomEdge() -> SCNVector3 {
-                  let b = mapHalf-4
+                  let b=mapHalf-4
                   switch Int.random(in:0...3) {
                   case 0:  return SCNVector3(Float.random(in:-b...b),0,-b)
                   case 1:  return SCNVector3(Float.random(in:-b...b),0, b)
@@ -1800,136 +1485,136 @@ jobs:
               }
 
               private func dropAmmo() {
-                  let geo = SCNBox(width:0.65,height:0.65,length:0.65,chamferRadius:0.08)
-                  let mat = SCNMaterial()
-                  mat.diffuse.contents  = UIColor(red:0.72,green:0.52,blue:0.14,alpha:1)
-                  mat.emission.contents = UIColor(red:0.35,green:0.22,blue:0.02,alpha:1)
-                  mat.lightingModel     = .constant; geo.materials = [mat]
-                  let node = SCNNode(geometry:geo); node.name = "ammo"
-                  node.position = SCNVector3(Float.random(in:-10...10),0.40,Float.random(in:-10...10))
+                  let geo=SCNBox(width:0.65,height:0.65,length:0.65,chamferRadius:0.08)
+                  let mat=SCNMaterial()
+                  mat.diffuse.contents=UIColor(red:0.72,green:0.52,blue:0.14,alpha:1)
+                  mat.emission.contents=UIColor(red:0.35,green:0.22,blue:0.02,alpha:1)
+                  mat.lightingModel = .constant; geo.materials=[mat]
+                  let node=SCNNode(geometry:geo); node.name="ammo"
+                  node.position=SCNVector3(Float.random(in:-10...10),0.40,Float.random(in:-10...10))
                   node.runAction(SCNAction.repeatForever(SCNAction.sequence([
                       SCNAction.moveBy(x:0,y:0.35,z:0,duration:0.75),
                       SCNAction.moveBy(x:0,y:-0.35,z:0,duration:0.75)
                   ])))
                   node.runAction(SCNAction.repeatForever(SCNAction.rotateBy(x:0,y:.pi*2,z:0,duration:2.5)))
-                  let body = SCNPhysicsBody(type:.static, shape:nil)
-                  body.categoryBitMask    = PM.item
-                  body.contactTestBitMask = PM.player
-                  body.collisionBitMask   = PM.none
-                  node.physicsBody = body
-                  scene.rootNode.addChildNode(node)
+                  let body=SCNPhysicsBody(type:.static,shape:nil)
+                  body.categoryBitMask=PM.item; body.contactTestBitMask=PM.player; body.collisionBitMask=PM.none
+                  node.physicsBody=body; scene.rootNode.addChildNode(node)
                   node.runAction(SCNAction.sequence([
-                      SCNAction.wait(duration:18),
-                      SCNAction.fadeOut(duration:1.5),
-                      SCNAction.removeFromParentNode()
+                      SCNAction.wait(duration:18),SCNAction.fadeOut(duration:1.5),SCNAction.removeFromParentNode()
                   ]))
               }
 
-              // MARK: – Physics
               func physicsWorld(_ world: SCNPhysicsWorld, didBegin contact: SCNPhysicsContact) {
                   let nA=contact.nodeA, nB=contact.nodeB
-                  let mA=nA.physicsBody?.categoryBitMask ?? 0
-                  let mB=nB.physicsBody?.categoryBitMask ?? 0
-
+                  let mA=nA.physicsBody?.categoryBitMask ?? 0, mB=nB.physicsBody?.categoryBitMask ?? 0
                   if (mA==PM.bullet&&mB==PM.enemy)||(mB==PM.bullet&&mA==PM.enemy) {
-                      let bNode = mA==PM.bullet ? nA : nB
-                      let eNode = (mA==PM.enemy ? nA : nB) as? ZombieNode
+                      let bNode=mA==PM.bullet ? nA : nB
+                      let eNode=(mA==PM.enemy ? nA : nB) as? ZombieNode
                       bNode.removeFromParentNode(); bullets.removeAll{$0===bNode}
                       let wasDead = !(eNode?.isAlive ?? true)
                       eNode?.takeDmg(25)
-                      if let e=eNode, !wasDead, !e.isAlive {
-                          score += e.kind.pts
+                      if let e=eNode,!wasDead,!e.isAlive {
+                          let pts=e.kind.pts; score+=pts
                           DispatchQueue.main.async { [weak self] in
-                              self?.hudView.showMessage("+\(e.kind.pts)",
-                                  color:UIColor(red:1,green:0.9,blue:0.2,alpha:1), dur:0.8)
+                              self?.hudView.showMessage("+\(pts)",
+                                  color:UIColor(red:1,green:0.9,blue:0.2,alpha:1),dur:0.8)
                           }
                       }; return
                   }
                   if mA==PM.bullet||mB==PM.bullet {
-                      let b=mA==PM.bullet ? nA : nB
-                      b.removeFromParentNode(); bullets.removeAll{$0===b}; return
+                      let b=mA==PM.bullet ? nA : nB; b.removeFromParentNode(); bullets.removeAll{$0===b}; return
                   }
                   if (mA==PM.player&&mB==PM.item)||(mB==PM.player&&mA==PM.item) {
-                      let item=mA==PM.item ? nA : nB; item.removeFromParentNode()
-                      totalAmmo += 30
+                      let item=mA==PM.item ? nA : nB; item.removeFromParentNode(); totalAmmo+=30
                       DispatchQueue.main.async { [weak self] in
                           self?.hudView.showMessage("🔋 AMMO COLLECTED!",
-                              color:UIColor(red:1,green:0.9,blue:0.2,alpha:1), dur:1.5)
+                              color:UIColor(red:1,green:0.9,blue:0.2,alpha:1),dur:1.5)
                       }
                   }
               }
 
-              // MARK: – Game Over
               private func endGame(victory: Bool) {
                   guard !isGameOver else { return }
-                  isGameOver = true
-                  player.stopWalk()
+                  isGameOver=true; player.stopWalk()
                   DispatchQueue.main.asyncAfter(deadline:.now()+1.8) { [weak self] in
                       self?.showEndScreen(victory:victory)
                   }
               }
 
+              // FIX: label func with correct external arg names + CGAffineTransform.identity explicit
               private func showEndScreen(victory: Bool) {
-                  let ov = UIView(frame:view.bounds); ov.backgroundColor = UIColor(white:0,alpha:0.86)
+                  let ov=UIView(frame:view.bounds); ov.backgroundColor=UIColor(white:0,alpha:0.86)
                   view.addSubview(ov)
 
-                  func mono(_ sz:CGFloat, bold:Bool=true)->UIFont {
-                      let f = UIFont(name:bold ? "Courier-Bold":"Courier", size:sz)
-                      return f ?? (bold ? UIFont.boldSystemFont(ofSize:sz):UIFont.systemFont(ofSize:sz))
+                  func monoFont(_ sz: CGFloat, bold: Bool = true) -> UIFont {
+                      let name = bold ? "Courier-Bold" : "Courier"
+                      let found = UIFont(name:name,size:sz)
+                      return found ?? (bold ? UIFont.boldSystemFont(ofSize:sz) : UIFont.systemFont(ofSize:sz))
                   }
-                  func label(_ t:String,_sz:CGFloat,_c:UIColor,_y:CGFloat,bold:Bool=true)->UILabel{
-                      let l=UILabel(frame:CGRect(x:0,y:_y,width:ov.bounds.width,height:_sz*1.6))
-                      l.text=t;l.textColor=_c;l.textAlignment = .center;l.font=mono(_sz,bold:bold)
+
+                  // FIX: No underscores on external labels — plain named params
+                  func makeLbl(text: String, size: CGFloat, color: UIColor, yPos: CGFloat, bold: Bool = true) -> UILabel {
+                      let l=UILabel(frame:CGRect(x:0,y:yPos,width:ov.bounds.width,height:size*1.6))
+                      l.text=text; l.textColor=color; l.textAlignment = .center; l.font=monoFont(size,bold:bold)
                       return l
                   }
-                  let tc=victory ? UIColor(red:1,green:0.82,blue:0,alpha:1):UIColor(red:0.95,green:0,blue:0,alpha:1)
-                  let title=label(victory ? "🎖 MISSION COMPLETE":"💀 YOU DIED",44,tc,ov.bounds.height*0.18)
-                  title.transform=CGAffineTransform(scaleX:0.28,y:0.28); ov.addSubview(title)
-                  UIView.animate(withDuration:0.38){title.transform = .identity}
 
-                  let rank:String
+                  let tc = victory
+                      ? UIColor(red:1,green:0.82,blue:0,alpha:1)
+                      : UIColor(red:0.95,green:0,blue:0,alpha:1)
+                  let titleText = victory ? "🎖 MISSION COMPLETE" : "💀 YOU DIED"
+                  let title = makeLbl(text:titleText, size:44, color:tc, yPos:ov.bounds.height*0.18)
+                  title.transform = CGAffineTransform(scaleX:0.28,y:0.28)
+                  ov.addSubview(title)
+                  // FIX: explicit CGAffineTransform.identity
+                  UIView.animate(withDuration:0.38) { title.transform = CGAffineTransform.identity }
+
+                  let rank: String
                   switch score {
-                  case ..<1000:rank="D";case ..<3500:rank="C";case ..<8000:rank="B";case ..<18000:rank="A";default:rank="S"
+                  case ..<1000:  rank="D"
+                  case ..<3500:  rank="C"
+                  case ..<8000:  rank="B"
+                  case ..<18000: rank="A"
+                  default:       rank="S"
                   }
+
                   let rows=["WAVES CLEARED :  \(wave)","FINAL SCORE   :  \(score)","RANK          :  \(rank)"]
-                  for(i,s)in rows.enumerated(){
-                      let l=label(s,21,UIColor(white:0.90,alpha:1),ov.bounds.height*0.40+CGFloat(i)*42,bold:false)
+                  for (i,s) in rows.enumerated() {
+                      let l = makeLbl(text:s, size:21, color:UIColor(white:0.90,alpha:1),
+                                      yPos:ov.bounds.height*0.40+CGFloat(i)*42, bold:false)
                       l.alpha=0; ov.addSubview(l)
-                      UIView.animate(withDuration:0.45,delay:0.5+Double(i)*0.25){l.alpha=1}
+                      UIView.animate(withDuration:0.45,delay:0.5+Double(i)*0.25) { l.alpha=1 }
                   }
 
                   let ag=UIButton(type:.custom)
                   ag.frame=CGRect(x:ov.bounds.width/2-125,y:ov.bounds.height*0.62,width:250,height:56)
-                  ag.setTitle("▶  PLAY AGAIN", for:.normal)
-                  let agf=UIFont(name:"Courier-Bold",size:23)
-                  ag.titleLabel?.font   = agf ?? UIFont.boldSystemFont(ofSize:23)
+                  ag.setTitle("▶  PLAY AGAIN",for:.normal)
+                  let agFont=UIFont(name:"Courier-Bold",size:23)
+                  ag.titleLabel?.font   = agFont ?? UIFont.boldSystemFont(ofSize:23)
                   ag.backgroundColor    = UIColor(red:0.55,green:0,blue:0,alpha:0.92)
                   ag.layer.cornerRadius = 14
                   ag.layer.borderColor  = UIColor(red:0.9,green:0.1,blue:0.1,alpha:1).cgColor
-                  ag.layer.borderWidth  = 2.5
-                  ag.alpha=0
+                  ag.layer.borderWidth  = 2.5; ag.alpha=0
                   ag.addTarget(self,action:#selector(restart),for:.touchUpInside)
                   ov.addSubview(ag)
-                  UIView.animate(withDuration:0.5,delay:1.6){ag.alpha=1}
+                  UIView.animate(withDuration:0.5,delay:1.6) { ag.alpha=1 }
               }
 
               @objc private func restart() {
-                  let vc=GameViewController(); vc.modalPresentationStyle = .fullScreen
-                  present(vc,animated:false)
+                  let vc=GameViewController(); vc.modalPresentationStyle = .fullScreen; present(vc,animated:false)
               }
 
               private func flashRed() {
                   let f=UIView(frame:view.bounds)
-                  f.backgroundColor=UIColor(red:0.88,green:0,blue:0,alpha:0.30)
-                  f.isUserInteractionEnabled=false; view.addSubview(f)
+                  f.backgroundColor=UIColor(red:0.88,green:0,blue:0,alpha:0.30); f.isUserInteractionEnabled=false
+                  view.addSubview(f)
                   UIView.animate(withDuration:0.28){f.alpha=0} completion:{_ in f.removeFromSuperview()}
               }
           }
           ENDOFFILE
 
-      # ───────────────────────────────────────────────────────────────────────────
-      # project.yml
-      # ───────────────────────────────────────────────────────────────────────────
+      # ── project.yml ───────────────────────────────────────────────────────────
       - name: project.yml
         run: |
           cat > DT3D/project.yml << 'YAML_EOF'
@@ -1974,9 +1659,7 @@ jobs:
                 - SDK: GameplayKit.framework
           YAML_EOF
 
-      # ───────────────────────────────────────────────────────────────────────────
-      # Info.plist
-      # ───────────────────────────────────────────────────────────────────────────
+      # ── Info.plist ────────────────────────────────────────────────────────────
       - name: Info.plist
         run: |
           cat > DT3D/Resources/Info.plist << 'PLIST_EOF'
@@ -2007,9 +1690,7 @@ jobs:
           </plist>
           PLIST_EOF
 
-      # ───────────────────────────────────────────────────────────────────────────
-      # LaunchScreen
-      # ───────────────────────────────────────────────────────────────────────────
+      # ── LaunchScreen ──────────────────────────────────────────────────────────
       - name: LaunchScreen.storyboard
         run: |
           cat > DT3D/Resources/LaunchScreen.storyboard << 'SB_EOF'
@@ -2051,9 +1732,7 @@ jobs:
           </document>
           SB_EOF
 
-      # ───────────────────────────────────────────────────────────────────────────
-      # AppIcon
-      # ───────────────────────────────────────────────────────────────────────────
+      # ── AppIcon ───────────────────────────────────────────────────────────────
       - name: AppIcon
         run: |
           cat > DT3D/Resources/Assets.xcassets/AppIcon.appiconset/Contents.json << 'JSON_EOF'
@@ -2073,18 +1752,14 @@ jobs:
                   for x in range(w):
                       cx,cy=x-w//2,y-h//2
                       dist=math.sqrt(cx*cx+cy*cy)
-                      # Dark night bg
                       br=max(0,int(12-dist*0.010)); bg=max(0,int(8-dist*0.007)); bb=max(0,int(20-dist*0.016))
-                      # Moon
                       md=math.sqrt((cx-w*0.28)**2+(cy+h*0.26)**2)
                       if md<w*0.14:
                           f=1-md/(w*0.14); r=int(210*f+br*(1-f)); g=int(200*f+bg*(1-f)); b=int(170*f+bb*(1-f))
-                      # Town silhouette
                       elif cy>-h*0.05 and cy<h*0.28:
                           bld=abs(cx)%80<35 and cy<h*0.28-abs(cx)%80*0.3
                           if bld: r,g,b=8,6,4
                           else: r,g,b=int(22*(1-cy/h*2)),int(42*(1-cy/h*2)),int(16*(1-cy/h*2))
-                      # Blood text area
                       elif abs(cx)<120 and -30<cy<30:
                           r,g,b=140,8,8
                       else:
@@ -2100,9 +1775,7 @@ jobs:
           print('Icon OK')
           PY_EOF
 
-      # ───────────────────────────────────────────────────────────────────────────
-      # XcodeGen + Build + Package + Upload
-      # ───────────────────────────────────────────────────────────────────────────
+      # ── XcodeGen + Build + Package ────────────────────────────────────────────
       - name: XcodeGen
         working-directory: DT3D
         run: xcodegen generate --spec project.yml --project .
@@ -2131,7 +1804,7 @@ jobs:
         run: |
           APP=$(find "${{ github.workspace }}/build/sym" -name "DeadTown3D.app" -type d | head -1)
           [ -z "$APP" ] && (grep "error:" build.log | head -20; exit 1)
-          echo "Found: $APP"
+          echo "Found: $APP  ($(du -sh "$APP" | cut -f1))"
           mkdir -p Payload; cp -r "$APP" Payload/DeadTown3D.app
           rm -rf Payload/DeadTown3D.app/_CodeSignature 2>/dev/null || true
           zip -r DeadTown3D.ipa Payload
@@ -2146,29 +1819,16 @@ jobs:
 
       - name: Summary
         run: |
-          echo "╔══════════════════════════════════════════════════╗"
-          echo "║   🧟 DEAD TOWN 3D – BUILD COMPLETE 🧟           ║"
-          echo "╠══════════════════════════════════════════════════╣"
-          echo "║  CHARACTER FEATURES:                            ║"
-          echo "║  ✅ Full human body (head/torso/arms/legs)      ║"
-          echo "║  ✅ Eyes, hair, clothes, belt, boots, gun       ║"
-          echo "║  ✅ Walking animation (arm+leg swing)           ║"
-          echo "║  ✅ 5 zombie types with human-like bodies       ║"
-          echo "║  ✅ Boss with glowing crown + pulse             ║"
-          echo "╠══════════════════════════════════════════════════╣"
-          echo "║  ENVIRONMENT:                                   ║"
-          echo "║  ✅ Green grass ground + variation patches      ║"
-          echo "║  ✅ Roads with markings + sidewalks             ║"
-          echo "║  ✅ 16 detailed buildings with lit windows      ║"
-          echo "║  ✅ 32 trees (conifer/broadleaf/dead)           ║"
-          echo "║  ✅ 16 lamp posts with flickering lights        ║"
-          echo "║  ✅ Wooden fence sections                       ║"
-          echo "║  ✅ Rocks, bushes, grass tufts                  ║"
-          echo "║  ✅ 8 parked cars with glass windows            ║"
-          echo "║  ✅ Night fog + moonlight shadows               ║"
-          echo "╠══════════════════════════════════════════════════╣"
-          echo "║  CONTROLS:                                      ║"
-          echo "║  Left Joy  → Move player                       ║"
-          echo "║  Right Joy → Rotate camera                     ║"
-          echo "║  🔫 Button → Shoot                             ║"
-          echo "╚══════════════════════════════════════════════════╝"
+          echo "╔══════════════════════════════════════════════╗"
+          echo "║  🧟 DEAD TOWN 3D – FIXED BUILD COMPLETE 🧟  ║"
+          echo "╠══════════════════════════════════════════════╣"
+          echo "║  FIXES:                                     ║"
+          echo "║  ✅ withKey → forKey  (SCNNode API)         ║"
+          echo "║  ✅ .identity → CGAffineTransform.identity  ║"
+          echo "║  ✅ label() named params corrected          ║"
+          echo "╠══════════════════════════════════════════════╣"
+          echo "║  SIDELOAD: AltStore / Sideloadly            ║"
+          echo "║  CONTROLS:                                  ║"
+          echo "║  Left Joy → Move   Right Joy → Camera      ║"
+          echo "║  🔫 Button → Shoot                         ║"
+          echo "╚══════════════════════════════════════════════╝"
